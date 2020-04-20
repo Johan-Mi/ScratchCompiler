@@ -3,26 +3,34 @@
 import os
 import json
 import shutil
-import hashlib
-
-def md5sum(filename):
-	with open(filename, "rb") as f:
-		return hashlib.md5(f.read()).hexdigest()
+from hashlib import md5
 
 def main():
 	backdropMd5 = md5sum("resources/backdrop.svg")
 
-	variables = {}
+	variables = {
+		"foo": "bar",
+		"hello": "there",
+		"hotel": "trivago",
+		"saved on car insurance by switching to Geico": 20,
+	}
 
-	lists = {}
+	lists = {
+		"primes": [2, 3, 5, 7, 11],
+		"squares": [1, "four", 9, 16, 25],
+	}
+
+	blocks = {}
 
 	stage = {
 		"isStage": True,
 		"name": "Stage",
-		"variables": variables,
-		"lists": lists,
+		"variables": { "var_%s" % name : [name, value]
+			for name, value in variables.items() },
+		"lists": { "var_%s" % name : [name, value]
+			for name, value in lists.items() },
 		"broadcasts": {},
-		"blocks": {},
+		"blocks": blocks,
 		"comments": {},
 		"currentCostume": 0,
 		"costumes": [
@@ -41,8 +49,7 @@ def main():
 
 		"tempo": 0,
 		"videoTransparency": 0,
-		"videoState": "on",
-		"textToSpeechLanguage": None,
+		"videoState": "off",
 	}
 
 	targets = [
@@ -52,18 +59,24 @@ def main():
 	project = {
 		"targets": targets,
 		"monitors": [],
-		"extensions": [],
 		"meta": {
 			"semver": "3.0.0",
-			"vm": "0.0.0-prerelease.00000000000000",
-			"agent": "-",
+			"vm": "0.0.0",
+			"agent": "",
 		},
 	}
 
 	createProjectFiles(project)
 
+def md5sum(filename):
+	with open(filename, "rb") as f:
+		return md5(f.read()).hexdigest()
+
 def createProjectFiles(project):
-	shutil.rmtree("project")
+	try:
+		shutil.rmtree("project")
+	except FileNotFoundError:
+		pass
 	os.mkdir("project")
 
 	with open("project/project.json", "w+") as f:
@@ -72,12 +85,8 @@ def createProjectFiles(project):
 	shutil.copy("resources/backdrop.svg",
 			"project/%s.svg" % project["targets"][0]["costumes"][0]["assetId"])
 
-	try:
-		os.remove("project.sb3")
-	except FileNotFoundError:
-		pass
-
-	os.system("zip -r project.sb3 project")
+	os.system("zip --quiet -r project.sb3 project")
+	shutil.rmtree("project")
 
 if __name__ == "__main__":
 	main()
