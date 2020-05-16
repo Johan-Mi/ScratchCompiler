@@ -1,0 +1,26 @@
+?start				: func_def* -> start
+?func_def			: "func" ident "(" param_list ")" block_stmt -> func_def
+?param_list			: (ident ("," ident)*)? -> param_list
+?func_call			: ident "(" arg_list ")" -> func_call
+?arg_list			: (expr ("," expr)*)? -> arg_list
+?stmt				: func_call ";"
+?stmts				: stmt* -> stmts
+?block_stmt			: "{" stmts "}" -> block_stmt
+
+?expr				: addition
+?addition			: addition "+" expr -> addition
+					| addition "-" expr -> subtraction
+					| multiplication
+?multiplication		: multiplication "*" expr -> multiplication
+					| multiplication "-" expr -> division
+					| multiplication "%" expr -> modulo
+					| NUMBER -> number
+					| ident
+
+?ident				: CNAME -> ident
+
+%import common.WS
+%import common.NUMBER
+%import common.CNAME
+
+%ignore WS
