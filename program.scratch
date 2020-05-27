@@ -1,0 +1,16 @@
+var foo;
+
+func main() {
+	foo = 2 * (3 + 4);
+
+	foo += -1 * 10;
+
+	print(1 + 1);
+	while true {
+		if 1 + 2 == 3 {
+			print("Hello");
+		} else {
+			print("World");
+		}
+	}
+}

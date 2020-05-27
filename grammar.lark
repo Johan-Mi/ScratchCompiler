@@ -1,26 +1,67 @@
-?start				: func_def* -> start
-?func_def			: "func" ident "(" param_list ")" block_stmt -> func_def
-?param_list			: (ident ("," ident)*)? -> param_list
-?func_call			: ident "(" arg_list ")" -> func_call
-?arg_list			: (expr ("," expr)*)? -> arg_list
-?stmt				: func_call ";"
-?stmts				: stmt* -> stmts
-?block_stmt			: "{" stmts "}" -> block_stmt
+?start			: (proc_def|var_decl|arr_decl)*				-> start
+?proc_def		: "func" ident "(" param_list ")" block_stmt-> proc_def
+?param_list		: (ident ("," ident)*)?						-> param_list
+?func_call		: ident "(" arg_list ")"					-> func_call
+?arg_list		: (expr ("," expr)*)?						-> arg_list
+?stmt			: func_call ";"
+				| if_stmt
+				| until_loop
+				| while_loop
+				| repeat_loop
+				| forever_loop
+				| var_assignment ";"
+?stmts			: stmt*										-> stmts
+?block_stmt		: "{" stmts "}"								-> block_stmt
+?var_decl		: "var" ident ";"							-> var_decl
+?arr_decl		: "arr" ident ";"							-> arr_decl
+?if_stmt		: "if" expr block_stmt						-> if_stmt
+				| "if" expr block_stmt "else" block_stmt	-> if_else_stmt
+				| "if" expr block_stmt "else" if_stmt		-> if_elif_stmt
+?until_loop		: "until" expr block_stmt					-> until_loop
+?while_loop		: "while" expr block_stmt					-> while_loop
+?repeat_loop	: "repeat" expr block_stmt					-> repeat_loop
+?forever_loop	: "forever" block_stmt						-> forever_loop
+?var_assignment : ident "=" expr							-> var_eq
+				| ident "+=" expr							-> var_peq
+				| ident "-=" expr							-> var_meq
+				| ident "*=" expr							-> var_teq
+				| ident "/=" expr							-> var_deq
 
-?expr				: addition
-?addition			: addition "+" expr -> addition
-					| addition "-" expr -> subtraction
-					| multiplication
-?multiplication		: multiplication "*" expr -> multiplication
-					| multiplication "-" expr -> division
-					| multiplication "%" expr -> modulo
-					| NUMBER -> number
-					| ident
+?expr			: logical_or
+?logical_or		: logical_or "||" logical_and				-> logical_or
+				| logical_and
+?logical_and	: logical_and "&&" comparision				-> logical_and
+				| comparision
+?comparision	: comparision ">" addition					-> greater_than
+				| comparision "<" addition					-> less_than
+				| comparision "==" addition					-> equal_to
+				| addition
+?addition		: addition "+" multiplication				-> addition
+				| addition "-" multiplication				-> subtraction
+				| multiplication
+?multiplication	: multiplication "*" logical_not			-> multiplication
+				| multiplication "/" logical_not			-> division
+				| multiplication "%" logical_not			-> modulo
+				| logical_not
+?logical_not	: "!" logical_not							-> logical_not
+				| atom
+?atom			: NUMBER									-> number
+				| string
+				| ident
+				| func_call
+				| "(" expr ")"
+				| "-" expr									-> negate
+				| true
+				| false
 
-?ident				: CNAME -> ident
+?true			: "true"									-> true
+?false			: "false"									-> false
+?ident			: CNAME										-> ident
+?string			: ESCAPED_STRING							-> string
 
 %import common.WS
 %import common.NUMBER
 %import common.CNAME
+%import common.ESCAPED_STRING
 
 %ignore WS

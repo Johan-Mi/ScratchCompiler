@@ -1,0 +1,42 @@
+[
+	{
+		"type": "var_decl",
+		"name": "foo"
+	},
+	{
+		"type": "procedures_definition",
+		"name": "main",
+		"params": [],
+		"body": [
+			{
+				"type": "data_setvariableto",
+				"name": "foo",
+				"value": 14.0
+			},
+			{
+				"type": "data_changevariableby",
+				"name": "foo",
+				"value": -10.0
+			},
+			{
+				"type": "procedures_call",
+				"name": "print",
+				"args": [
+					2.0
+				]
+			},
+			{
+				"type": "control_forever",
+				"body": [
+					{
+						"type": "procedures_call",
+						"name": "print",
+						"args": [
+							"Hello"
+						]
+					}
+				]
+			}
+		]
+	}
+]

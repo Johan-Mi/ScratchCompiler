@@ -1,7 +1,0 @@
-func main() {
-	foo(2 + 3 * 4);
-}
-
-func foo(num) {
-	bar(num + 3);
-}
