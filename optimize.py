@@ -18,45 +18,21 @@ def toNumber(v):
 
 def optimize(tree):
 	if type(tree) is dict:
-		def operator_add(t):
-			t["NUM1"] = optimize(t["NUM1"])
-			t["NUM2"] = optimize(t["NUM2"])
-			if type(t["NUM1"]) is dict or type(t["NUM2"]) is dict:
-				return t
-			else:
-				return toNumber(t["NUM1"]) + toNumber(t["NUM2"])
+		def bin_numeric_op(func):
+			def f(t):
+				t["NUM1"] = optimize(t["NUM1"])
+				t["NUM2"] = optimize(t["NUM2"])
+				if type(t["NUM1"]) is dict or type(t["NUM2"]) is dict:
+					return t
+				else:
+					return func(toNumber(t["NUM1"]), toNumber(t["NUM2"]))
+			return f
 
-		def operator_subtract(t):
-			t["NUM1"] = optimize(t["NUM1"])
-			t["NUM2"] = optimize(t["NUM2"])
-			if type(t["NUM1"]) is dict or type(t["NUM2"]) is dict:
-				return t
-			else:
-				return toNumber(t["NUM1"]) - toNumber(t["NUM2"])
-
-		def operator_multiply(t):
-			t["NUM1"] = optimize(t["NUM1"])
-			t["NUM2"] = optimize(t["NUM2"])
-			if type(t["NUM1"]) is dict or type(t["NUM2"]) is dict:
-				return t
-			else:
-				return toNumber(t["NUM1"]) * toNumber(t["NUM2"])
-
-		def operator_divide(t):
-			t["NUM1"] = optimize(t["NUM1"])
-			t["NUM2"] = optimize(t["NUM2"])
-			if type(t["NUM1"]) is dict or type(t["NUM2"]) is dict:
-				return t
-			else:
-				return toNumber(t["NUM1"]) / toNumber(t["NUM2"])
-
-		def operator_mod(t):
-			t["NUM1"] = optimize(t["NUM1"])
-			t["NUM2"] = optimize(t["NUM2"])
-			if type(t["NUM1"]) is dict or type(t["NUM2"]) is dict:
-				return t
-			else:
-				return toNumber(t["NUM1"]) % toNumber(t["NUM2"])
+		operator_add = bin_numeric_op(lambda a, b: a + b)
+		operator_subtract = bin_numeric_op(lambda a, b: a - b)
+		operator_multiply = bin_numeric_op(lambda a, b: a * b)
+		operator_divide = bin_numeric_op(lambda a, b: a / b)
+		operator_mod = bin_numeric_op(lambda a, b: a % b)
 
 		def operator_equals(t):
 			t["OPERAND1"] = optimize(t["OPERAND1"])
@@ -161,6 +137,19 @@ def optimize(tree):
 			t["value"] = optimize(t["value"]);
 			return t
 
+		def scene_def(t):
+			t["procedures"] = optimize(t["procedures"])
+			return t
+
+		def sprite_def(t):
+			t["procedures"] = optimize(t["procedures"])
+			return t
+
+		def program(t):
+			t["scene"] = optimize(t["scene"])
+			t["sprites"] = optimize(t["sprites"])
+			return t
+
 		return {
 				"operator_add": operator_add,
 				"operator_subtract": operator_subtract,
@@ -177,15 +166,18 @@ def optimize(tree):
 				"control_repeat_until": control_repeat_until,
 				"data_setvariableto": data_setvariableto,
 				"data_changevariableby": data_changevariableby,
+				"scene_def": scene_def,
+				"sprite_def": sprite_def,
+				"program": program,
 				}.get(tree["type"], lambda x: x)(tree)
 	elif type(tree) is list:
 		l = []
-		for a in tree:
-			b = optimize(a)
-			if type(b) is list:
-				l += b
-			elif b is not None:
-				l.append(b)
+		for i in tree:
+			i = optimize(i)
+			if type(i) is list:
+				l += i
+			elif i is not None:
+				l.append(i)
 		return l
 	else:
 		return tree

@@ -1,8 +1,12 @@
-?start			: (proc_def|var_decl|arr_decl)*				-> start
-?proc_def		: "func" ident "(" param_list ")" block_stmt-> proc_def
-?param_list		: (ident ("," ident)*)?						-> param_list
-?func_call		: ident "(" arg_list ")"					-> func_call
-?arg_list		: (expr ("," expr)*)?						-> arg_list
+start			: (scene_def|sprite_def|var_decl|arr_decl)*
+scene_def		: "scene" "{" (proc_def|costume_list)* "}"	-> scene_def
+sprite_def		: "sprite" ident "{" _sprite_content "}"	-> sprite_def
+_sprite_content	: (proc_def|var_decl|arr_decl|costume_list)*
+costume_list	: "costumes" "{" [string ("," string)*] "}"	-> costume_list
+proc_def		: "func" ident "(" param_list ")" block_stmt-> proc_def
+param_list		: [ident ("," ident)*]						-> param_list
+func_call		: ident "(" arg_list ")"					-> func_call
+arg_list		: [expr ("," expr)*]						-> arg_list
 ?stmt			: func_call ";"
 				| if_stmt
 				| until_loop
@@ -10,23 +14,22 @@
 				| repeat_loop
 				| forever_loop
 				| var_assignment ";"
-?stmts			: stmt*										-> stmts
-?block_stmt		: "{" stmts "}"								-> block_stmt
-?var_decl		: "var" ident ";"							-> var_decl
-?arr_decl		: "arr" ident ";"							-> arr_decl
-?if_stmt		: "if" expr block_stmt						-> if_stmt
+stmts			: stmt*										-> stmts
+block_stmt		: "{" stmts "}"								-> block_stmt
+var_decl		: "var" ident ";"							-> var_decl
+arr_decl		: "arr" ident ";"							-> arr_decl
+if_stmt			: "if" expr block_stmt						-> if_stmt
 				| "if" expr block_stmt "else" block_stmt	-> if_else_stmt
 				| "if" expr block_stmt "else" if_stmt		-> if_elif_stmt
-?until_loop		: "until" expr block_stmt					-> until_loop
-?while_loop		: "while" expr block_stmt					-> while_loop
-?repeat_loop	: "repeat" expr block_stmt					-> repeat_loop
-?forever_loop	: "forever" block_stmt						-> forever_loop
-?var_assignment : ident "=" expr							-> var_eq
+until_loop		: "until" expr block_stmt					-> until_loop
+while_loop		: "while" expr block_stmt					-> while_loop
+repeat_loop		: "repeat" expr block_stmt					-> repeat_loop
+forever_loop	: "forever" block_stmt						-> forever_loop
+var_assignment	: ident "=" expr							-> var_eq
 				| ident "+=" expr							-> var_peq
 				| ident "-=" expr							-> var_meq
 				| ident "*=" expr							-> var_teq
 				| ident "/=" expr							-> var_deq
-
 ?expr			: logical_or
 ?logical_or		: logical_or "||" logical_and				-> logical_or
 				| logical_and
@@ -54,10 +57,10 @@
 				| true
 				| false
 
-?true			: "true"									-> true
-?false			: "false"									-> false
-?ident			: CNAME										-> ident
-?string			: ESCAPED_STRING							-> string
+true			: "true"									-> true
+false			: "false"									-> false
+ident			: CNAME										-> ident
+string			: ESCAPED_STRING							-> string
 
 %import common.WS
 %import common.NUMBER

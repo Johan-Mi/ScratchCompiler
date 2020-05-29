@@ -1,16 +1,25 @@
-var foo;
+scene {
+	costumes {
+		"backdrop1.png"
+	}
+}
 
-func main() {
-	foo = 2 * (3 + 4);
+sprite scratchCat {
+	costumes {
+		"scratch_cat.png", "gobo.png", "img1.svg"
+	}
 
-	foo += -1 * 10;
+	var n;
 
-	print(1 + 1);
-	while true {
-		if 1 + 2 == 3 {
-			print("Hello");
+	func main() {
+		if n % 15 == 0 {
+			print("fizzbuzz");
+		} else if n % 5 == 0 {
+			print("fizz");
+		} else if n % 3 == 0 {
+			print("buzz");
 		} else {
-			print("World");
+			print(n);
 		}
 	}
 }

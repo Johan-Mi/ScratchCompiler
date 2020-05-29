@@ -1,7 +1,44 @@
 from lark import Transformer
 
 class GrammarTransformer(Transformer):
-	start = lambda args: args
+	def start(args):
+		scene = [i for i in args if i["type"] == "scene_def"]
+		assert len(scene) <= 1
+		scene = scene[0] if scene else {"type": "scene_def", "procedures": []}
+		return {"type": "program",
+				"variables":
+				[i["name"] for i in args if i["type"] == "var_decl"],
+				"lists": [i["name"] for i in args if i["type"] == "arr_decl"],
+				"sprites": [i for i in args if i["type"] == "sprite_def"],
+				"scene": scene}
+	def scene_def(args):
+		costumes = [i for i in args
+				if type(i) is dict
+				and i["type"] == "costume_list"]
+		assert len(costumes) <= 1
+		costumes = costumes[0]["costumes"] if costumes else []
+		return {"type": "scene_def",
+				"costumes": costumes,
+				"procedures":
+				[i for i in args
+					if type(i) is dict
+					and i["type"] == "procedures_definition"]}
+	def sprite_def(args):
+		costumes = [i for i in args
+				if type(i) is dict
+				and i["type"] == "costume_list"]
+		assert len(costumes) <= 1
+		costumes = costumes[0]["costumes"] if costumes else []
+		return {"type": "sprite_def",
+				"name": args[0]["name"],
+				"costumes": costumes,
+				"variables":
+				[i["name"] for i in args if i["type"] == "var_decl"],
+				"lists": [i["name"] for i in args if i["type"] == "arr_decl"],
+				"procedures":
+				[i for i in args if i["type"] == "procedures_definition"]}
+	costume_list = lambda args: {"type": "costume_list",
+			"costumes": args}
 	ident = lambda args: {"type": "ident",
 			"name": str(args[0])}
 	stmts = lambda args: {"type": "stmts",
