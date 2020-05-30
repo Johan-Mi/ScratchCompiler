@@ -1,25 +1,7 @@
 scene {
-	costumes {
-		"backdrop1.png"
-	}
-}
-
-sprite scratchCat {
-	costumes {
-		"scratch_cat.png", "gobo.png", "img1.svg"
-	}
-
-	var n;
-
 	func main() {
-		if n % 15 == 0 {
-			print("fizzbuzz");
-		} else if n % 5 == 0 {
-			print("fizz");
-		} else if n % 3 == 0 {
-			print("buzz");
-		} else {
-			print(n);
+		if exp(3) == 1000 {
+			print(abs(-3.14));
 		}
 	}
 }

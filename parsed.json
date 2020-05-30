@@ -1,124 +1,48 @@
 {
 	"type": "program",
-	"variables": [],
-	"lists": [],
-	"sprites": [
-		{
-			"type": "sprite_def",
-			"name": "scratchCat",
-			"costumes": [
-				"scratch_cat.png",
-				"gobo.png",
-				"img1.svg"
-			],
-			"variables": [
-				"n"
-			],
-			"lists": [],
-			"procedures": [
-				{
-					"type": "procedures_definition",
-					"name": "main",
-					"params": [],
-					"body": [
-						{
-							"type": "control_if_else",
-							"CONDITION": {
-								"type": "operator_equals",
-								"OPERAND1": {
-									"type": "operator_mod",
-									"NUM1": {
-										"type": "ident",
-										"name": "n"
-									},
-									"NUM2": 15.0
-								},
-								"OPERAND2": 0.0
-							},
-							"true_branch": [
-								{
-									"type": "procedures_call",
-									"name": "print",
-									"args": [
-										"fizzbuzz"
-									]
-								}
-							],
-							"false_branch": [
-								{
-									"type": "control_if_else",
-									"CONDITION": {
-										"type": "operator_equals",
-										"OPERAND1": {
-											"type": "operator_mod",
-											"NUM1": {
-												"type": "ident",
-												"name": "n"
-											},
-											"NUM2": 5.0
-										},
-										"OPERAND2": 0.0
-									},
-									"true_branch": [
-										{
-											"type": "procedures_call",
-											"name": "print",
-											"args": [
-												"fizz"
-											]
-										}
-									],
-									"false_branch": [
-										{
-											"type": "control_if_else",
-											"CONDITION": {
-												"type": "operator_equals",
-												"OPERAND1": {
-													"type": "operator_mod",
-													"NUM1": {
-														"type": "ident",
-														"name": "n"
-													},
-													"NUM2": 3.0
-												},
-												"OPERAND2": 0.0
-											},
-											"true_branch": [
-												{
-													"type": "procedures_call",
-													"name": "print",
-													"args": [
-														"buzz"
-													]
-												}
-											],
-											"false_branch": [
-												{
-													"type": "procedures_call",
-													"name": "print",
-													"args": [
-														{
-															"type": "ident",
-															"name": "n"
-														}
-													]
-												}
-											]
-										}
-									]
-								}
-							]
-						}
-					]
-				}
-			]
-		}
-	],
 	"scene": {
 		"type": "scene_def",
-		"costumes": [
-			"backdrop1.png"
+		"costumes": [],
+		"procedures": [
+			{
+				"type": "procedures_definition",
+				"name": "main",
+				"params": [],
+				"body": [
+					{
+						"type": "control_if",
+						"CONDITION": {
+							"type": "operator_equals",
+							"OPERAND1": {
+								"type": "mathop",
+								"operator": "e ^",
+								"NUM": 3.0
+							},
+							"OPERAND2": 1000.0
+						},
+						"true_branch": [
+							{
+								"type": "procedures_call",
+								"name": "print",
+								"args": [
+									{
+										"type": "mathop",
+										"operator": "abs",
+										"NUM": {
+											"type": "operator_subtract",
+											"NUM1": 0.0,
+											"NUM2": 3.14
+										}
+									}
+								]
+							}
+						]
+					}
+				]
+			}
 		],
-		"procedures": []
-	}
+		"variables": [],
+		"lists": []
+	},
+	"sprites": []
 }

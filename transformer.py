@@ -3,31 +3,31 @@ from lark import Transformer
 class GrammarTransformer(Transformer):
 	def start(args):
 		scene = [i for i in args if i["type"] == "scene_def"]
-		assert len(scene) <= 1
+		if len(scene) > 1:
+			raise Exception("Scene defined multiple times")
 		scene = scene[0] if scene else {"type": "scene_def", "procedures": []}
+		scene["variables"] = \
+			[i["name"] for i in args if i["type"] == "var_decl"]
+		scene["lists"] = [i["name"] for i in args if i["type"] == "arr_decl"]
 		return {"type": "program",
-				"variables":
-				[i["name"] for i in args if i["type"] == "var_decl"],
-				"lists": [i["name"] for i in args if i["type"] == "arr_decl"],
-				"sprites": [i for i in args if i["type"] == "sprite_def"],
-				"scene": scene}
+				"scene": scene,
+				"sprites": [i for i in args if i["type"] == "sprite_def"]}
 	def scene_def(args):
 		costumes = [i for i in args
-				if type(i) is dict
-				and i["type"] == "costume_list"]
-		assert len(costumes) <= 1
+				if type(i) is dict and i["type"] == "costume_list"]
+		if len(costumes) > 1:
+			raise Exception("Scene has multiple costume lists")
 		costumes = costumes[0]["costumes"] if costumes else []
 		return {"type": "scene_def",
 				"costumes": costumes,
 				"procedures":
-				[i for i in args
-					if type(i) is dict
+				[i for i in args if type(i) is dict
 					and i["type"] == "procedures_definition"]}
 	def sprite_def(args):
-		costumes = [i for i in args
-				if type(i) is dict
+		costumes = [i for i in args if type(i) is dict
 				and i["type"] == "costume_list"]
-		assert len(costumes) <= 1
+		if len(costumes) > 1:
+			raise Exception("Sprite has multiple costume lists")
 		costumes = costumes[0]["costumes"] if costumes else []
 		return {"type": "sprite_def",
 				"name": args[0]["name"],
@@ -51,7 +51,10 @@ class GrammarTransformer(Transformer):
 			"body": args[2]["body"]["stmts"]}
 	param_list = lambda args: {"type": "param_list",
 			"params": [{"type": "param", "name": p["name"]} for p in args]}
-	func_call = lambda args: {"type": "procedures_call",
+	func_call = lambda args: {"type": "func_call",
+			"name": args[0]["name"],
+			"args": args[1]["args"]}
+	procedures_call = lambda args: {"type": "procedures_call",
 			"name": args[0]["name"],
 			"args": args[1]["args"]}
 	number = lambda args: float(args[0])

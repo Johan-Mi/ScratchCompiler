@@ -6,8 +6,9 @@ costume_list	: "costumes" "{" [string ("," string)*] "}"	-> costume_list
 proc_def		: "func" ident "(" param_list ")" block_stmt-> proc_def
 param_list		: [ident ("," ident)*]						-> param_list
 func_call		: ident "(" arg_list ")"					-> func_call
+procedures_call	: ident "(" arg_list ")"					-> procedures_call
 arg_list		: [expr ("," expr)*]						-> arg_list
-?stmt			: func_call ";"
+?stmt			: procedures_call ";"
 				| if_stmt
 				| until_loop
 				| while_loop

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-from json import dumps
+import json
 import shutil
 from hashlib import md5
 from enum import Enum
@@ -9,6 +9,7 @@ from lark import Lark
 
 from transformer import GrammarTransformer
 from optimize import optimize
+from scratchify import scratchify
 
 with open("grammar.lark") as f:
 	grammar = f.read()
@@ -19,11 +20,12 @@ def main():
 	with open("program.scratch") as f:
 		sourceCode = f.read()
 	parsed = parser.parse(sourceCode)
+	parsed = scratchify(parsed)
 	parsed = optimize(parsed)
 
 	try:
 		with open("parsed.json", "w") as f:
-			f.write(dumps(parsed, indent="\t"))
+			json.dump(parsed, f, indent="\t")
 	except TypeError:
 		print(parsed)
 

@@ -1,4 +1,5 @@
 from math import isnan
+import operator
 
 def toBool(v):
 	if type(v) is bool:
@@ -8,7 +9,7 @@ def toBool(v):
 	return bool(v)
 
 def toNumber(v):
-	if type(v) is int or type(v) is float:
+	if type(v) in (int, float):
 		return 0 if isnan(v) else v
 	try:
 		n = float(v)
@@ -18,152 +19,150 @@ def toNumber(v):
 
 def optimize(tree):
 	if type(tree) is dict:
+		def basic_optimize(t, *args):
+			for i in args:
+				t[i] = optimize(t[i])
+
 		def bin_numeric_op(func):
 			def f(t):
-				t["NUM1"] = optimize(t["NUM1"])
-				t["NUM2"] = optimize(t["NUM2"])
+				basic_optimize(t, "NUM1", "NUM2")
 				if type(t["NUM1"]) is dict or type(t["NUM2"]) is dict:
 					return t
 				else:
 					return func(toNumber(t["NUM1"]), toNumber(t["NUM2"]))
 			return f
 
-		operator_add = bin_numeric_op(lambda a, b: a + b)
-		operator_subtract = bin_numeric_op(lambda a, b: a - b)
-		operator_multiply = bin_numeric_op(lambda a, b: a * b)
-		operator_divide = bin_numeric_op(lambda a, b: a / b)
-		operator_mod = bin_numeric_op(lambda a, b: a % b)
+		def bin_equality_op(func):
+			def f(t):
+				basic_optimize(t, "OPERAND1", "OPERAND2")
+				if type(t["OPERAND1"]) is dict or type(t["OPERAND2"]) is dict:
+					return t
+				else:
+					a = t["OPERAND1"]
+					b = t["OPERAND2"]
+					if type(b) is not type(a):
+						b = type(a)(b)
+					return "true" if func(a, b) else "false"
+			return f
 
-		def operator_equals(t):
-			t["OPERAND1"] = optimize(t["OPERAND1"])
-			t["OPERAND2"] = optimize(t["OPERAND2"])
+		def operator_and(t):
+			basic_optimize(t, "OPERAND1", "OPERAND2")
 			if type(t["OPERAND1"]) is dict or type(t["OPERAND2"]) is dict:
 				return t
 			else:
-				a = t["OPERAND1"]
-				b = t["OPERAND2"]
-				if type(b) is not type(a):
-					b = type(a)(b)
-				return str(a == b).lower()
+				return "true" \
+						if toBool(t["OPERAND1"]) and toBool(t["OPERAND2"]) \
+						else "false"
 
-		def operator_lt(t):
-			t["OPERAND1"] = optimize(t["OPERAND1"])
-			t["OPERAND2"] = optimize(t["OPERAND2"])
+		def operator_or(t):
+			basic_optimize(t, "OPERAND1", "OPERAND2")
 			if type(t["OPERAND1"]) is dict or type(t["OPERAND2"]) is dict:
 				return t
 			else:
-				a = t["OPERAND1"]
-				b = t["OPERAND2"]
-				if type(b) is not type(a):
-					b = type(a)(b)
-				return str(a < b).lower()
+				return "true" \
+						if toBool(t["OPERAND1"]) or toBool(t["OPERAND2"]) \
+						else "false"
 
-		def operator_gt(t):
-			t["OPERAND1"] = optimize(t["OPERAND1"])
-			t["OPERAND2"] = optimize(t["OPERAND2"])
-			if type(t["OPERAND1"]) is dict or type(t["OPERAND2"]) is dict:
+		def operator_not(t):
+			basic_optimize(t, "OPERAND")
+			if type(t["OPERAND"]) is dict:
 				return t
 			else:
-				a = t["OPERAND1"]
-				b = t["OPERAND2"]
-				if type(b) is not type(a):
-					b = type(a)(b)
-				return str(a > b).lower()
+				return "false" if toBool(t["OPERAND"]) else "true"
 
 		def procedures_definition(t):
-			t["body"] = optimize(t["body"])
+			basic_optimize(t, "body")
 			return t
 
 		def procedures_call(t):
-			t["args"] = optimize(t["args"])
+			basic_optimize(t, "args")
+			return t
+
+		def func_call(t):
+			basic_optimize(t, "args")
 			return t
 
 		def control_if(t):
-			t["CONDITION"] = optimize(t["CONDITION"])
-			t["true_branch"] = [optimize(i) for i in t["true_branch"]]
+			basic_optimize(t, "CONDITION", "true_branch")
 			if type(t["CONDITION"]) is dict:
 				return t
 			else:
-				if toBool(t["CONDITION"]):
-					return t["true_branch"]
-				else:
-					return None
+				return t["true_branch"] if toBool(t["CONDITION"]) else None
 
 		def control_if_else(t):
-			t["CONDITION"] = optimize(t["CONDITION"])
-			t["true_branch"] = [optimize(i) for i in t["true_branch"]]
-			t["false_branch"] = [optimize(i) for i in t["false_branch"]]
+			basic_optimize(t, "CONDITION", "true_branch", "false_branch")
 			if type(t["CONDITION"]) is dict:
 				return t
 			else:
-				if toBool(t["CONDITION"]):
-					return t["true_branch"]
-				else:
-					return t["false_branch"]
+				return t["true_branch" if toBool(t["CONDITION"]) else
+						"false_branch"]
 
 		def control_forever(t):
-			t["body"] = optimize(t["body"])
+			basic_optimize(t, "body")
 			return t
 
 		def control_while(t):
-			t["CONDITION"] = optimize(t["CONDITION"])
-			t["body"] = optimize(t["body"])
+			basic_optimize(t, "CONDITION", "body")
 			if type(t["CONDITION"]) is dict:
 				return t
 			else:
-				if toBool(t["CONDITION"]):
-					return {"type": "control_forever",
-							"body": t["body"]}
-				else:
-					return None
+				return {"type": "control_forever",
+						"body": t["body"]} if toBool(t["CONDITION"]) else None
 
 		def control_repeat_until(t):
-			t["CONDITION"] = optimize(t["CONDITION"])
-			t["body"] = optimize(t["body"])
+			basic_optimize(t, "CONDITION", "body")
 			if type(t["CONDITION"]) is dict:
 				return t
 			else:
-				if toBool(t["CONDITION"]):
-					return None
-				else:
-					return {"type": "control_forever",
-							"body": t["body"]}
+				return None if toBool(t["CONDITION"]) \
+						else {"type": "control_forever",
+								"body": t["body"]}
+
+		def control_repeat(t):
+			basic_optimize(t, "TIMES", "body")
+			return t
 
 		def data_setvariableto(t):
-			t["value"] = optimize(t["value"]);
+			basic_optimize(t, "value")
 			return t
 
 		def data_changevariableby(t):
-			t["value"] = optimize(t["value"]);
+			basic_optimize(t, "value")
 			return t
 
 		def scene_def(t):
-			t["procedures"] = optimize(t["procedures"])
+			basic_optimize(t, "procedures")
 			return t
 
 		def sprite_def(t):
-			t["procedures"] = optimize(t["procedures"])
+			basic_optimize(t, "procedures")
 			return t
 
 		def program(t):
-			t["scene"] = optimize(t["scene"])
-			t["sprites"] = optimize(t["sprites"])
+			basic_optimize(t, "scene", "sprites")
 			return t
 
 		return {
-				"operator_add": operator_add,
-				"operator_subtract": operator_subtract,
-				"operator_multiply": operator_multiply,
-				"operator_divide": operator_divide,
-				"operator_mod": operator_mod,
-				"operator_equals": operator_equals,
+				"operator_add": bin_numeric_op(operator.add),
+				"operator_subtract": bin_numeric_op(operator.sub),
+				"operator_multiply": bin_numeric_op(operator.mul),
+				"operator_divide": bin_numeric_op(operator.truediv),
+				"operator_mod": bin_numeric_op(operator.mod),
+				"operator_equals": bin_equality_op(operator.eq),
+				"operator_gt": bin_equality_op(operator.gt),
+				"operator_lt": bin_equality_op(operator.lt),
+				"operator_and":	operator_and,
+				"operator_or": operator_or,
+				"operator_not": operator_not,
 				"procedures_definition": procedures_definition,
 				"procedures_call": procedures_call,
+				"func_call": func_call,
 				"control_if": control_if,
 				"control_if_else": control_if_else,
 				"control_forever": control_forever,
 				"control_while": control_while,
 				"control_repeat_until": control_repeat_until,
+				"control_repeat": control_repeat,
 				"data_setvariableto": data_setvariableto,
 				"data_changevariableby": data_changevariableby,
 				"scene_def": scene_def,
