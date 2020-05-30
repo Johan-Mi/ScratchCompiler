@@ -10,32 +10,10 @@
 				"params": [],
 				"body": [
 					{
-						"type": "control_if",
-						"CONDITION": {
-							"type": "operator_equals",
-							"OPERAND1": {
-								"type": "mathop",
-								"operator": "e ^",
-								"NUM": 3.0
-							},
-							"OPERAND2": 1000.0
-						},
-						"true_branch": [
-							{
-								"type": "procedures_call",
-								"name": "print",
-								"args": [
-									{
-										"type": "mathop",
-										"operator": "abs",
-										"NUM": {
-											"type": "operator_subtract",
-											"NUM1": 0.0,
-											"NUM2": 3.14
-										}
-									}
-								]
-							}
+						"type": "procedures_call",
+						"name": "print",
+						"args": [
+							1.0
 						]
 					}
 				]

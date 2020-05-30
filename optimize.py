@@ -1,21 +1,6 @@
-from math import isnan
 import operator
-
-def toBool(v):
-	if type(v) is bool:
-		return v
-	if type(v) is str:
-		return v.lower() not in ("", "0", "false")
-	return bool(v)
-
-def toNumber(v):
-	if type(v) in (int, float):
-		return 0 if isnan(v) else v
-	try:
-		n = float(v)
-		return 0 if isnan(n) else n
-	except ValueError:
-		return 0
+import math
+from cast import toBool, toNumber
 
 def optimize(tree):
 	if type(tree) is dict:
@@ -75,10 +60,6 @@ def optimize(tree):
 			return t
 
 		def procedures_call(t):
-			basic_optimize(t, "args")
-			return t
-
-		def func_call(t):
 			basic_optimize(t, "args")
 			return t
 
@@ -142,6 +123,28 @@ def optimize(tree):
 			basic_optimize(t, "scene", "sprites")
 			return t
 
+		def mathop(t):
+			basic_optimize(t, "NUM")
+			if type(t["NUM"]) is dict:
+				return t
+			else:
+				return {
+						"abs": abs,
+						"floor": math.floor,
+						"ceiling": math.ceil,
+						"sqrt": math.sqrt,
+						"sin": math.sin,
+						"cos": math.cos,
+						"tan": math.tan,
+						"asin": math.asin,
+						"acos": math.acos,
+						"atan": math.atan,
+						"ln": math.log,
+						"log": math.log10,
+						"e ^": math.exp,
+						"10 ^": lambda x: 10 ** x,
+						}[t["OPERATOR"]](toNumber(t["NUM"]))
+
 		return {
 				"operator_add": bin_numeric_op(operator.add),
 				"operator_subtract": bin_numeric_op(operator.sub),
@@ -156,7 +159,6 @@ def optimize(tree):
 				"operator_not": operator_not,
 				"procedures_definition": procedures_definition,
 				"procedures_call": procedures_call,
-				"func_call": func_call,
 				"control_if": control_if,
 				"control_if_else": control_if_else,
 				"control_forever": control_forever,
@@ -168,6 +170,7 @@ def optimize(tree):
 				"scene_def": scene_def,
 				"sprite_def": sprite_def,
 				"program": program,
+				"mathop": mathop,
 				}.get(tree["type"], lambda x: x)(tree)
 	elif type(tree) is list:
 		l = []

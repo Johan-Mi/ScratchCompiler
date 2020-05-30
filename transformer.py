@@ -51,9 +51,45 @@ class GrammarTransformer(Transformer):
 			"body": args[2]["body"]["stmts"]}
 	param_list = lambda args: {"type": "param_list",
 			"params": [{"type": "param", "name": p["name"]} for p in args]}
-	func_call = lambda args: {"type": "func_call",
-			"name": args[0]["name"],
-			"args": args[1]["args"]}
+	def func_call(args):
+		def expect_args(name, count, provided):
+			if count != provided:
+				raise Exception(f"{name} expected {count} arguments but \
+						{provided} were provided")
+
+		def unary_math_func(operator):
+			def f(u):
+				expect_args(operator, 1, len(u["args"]))
+				return {"type": "mathop",
+						"OPERATOR": operator,
+						"NUM": u["args"][0]}
+			return f
+
+		def unknown_func(u):
+			raise Exception(f"The function {u['name']} does not exist")
+
+		t = {"name": args[0]["name"],
+				"args": args[1]["args"]}
+
+		return {
+				"abs": unary_math_func("abs"),
+				"floor": unary_math_func("floor"),
+				"ceiling": unary_math_func("ceiling"),
+				"sqrt": unary_math_func("sqrt"),
+				"sin": unary_math_func("sin"),
+				"cos": unary_math_func("cos"),
+				"tan": unary_math_func("tan"),
+				"asin": unary_math_func("asin"),
+				"acos": unary_math_func("acos"),
+				"atan": unary_math_func("atan"),
+				"ln": unary_math_func("ln"),
+				"log": unary_math_func("log"),
+				"exp": unary_math_func("e ^"),
+				"pow": unary_math_func("10 ^"),
+				}.get(t["name"], unknown_func)(t)
+		# return {"type": "func_call",
+		# 		"name": args[0]["name"],
+		# 		"args": args[1]["args"]}
 	procedures_call = lambda args: {"type": "procedures_call",
 			"name": args[0]["name"],
 			"args": args[1]["args"]}

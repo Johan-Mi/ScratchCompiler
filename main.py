@@ -9,7 +9,6 @@ from lark import Lark
 
 from transformer import GrammarTransformer
 from optimize import optimize
-from scratchify import scratchify
 
 with open("grammar.lark") as f:
 	grammar = f.read()
@@ -20,7 +19,6 @@ def main():
 	with open("program.scratch") as f:
 		sourceCode = f.read()
 	parsed = parser.parse(sourceCode)
-	parsed = scratchify(parsed)
 	parsed = optimize(parsed)
 
 	try:

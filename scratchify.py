@@ -1,38 +1,7 @@
+# Currently unused
+
 def scratchify(tree):
 	if type(tree) is dict:
-		def expect_args(name, count, provided):
-			if count != provided:
-				raise Exception(f"{name} expected {count} arguments but \
-						{provided} were provided")
-		def func_call(t):
-			def unary_func(operator):
-				def f(u):
-					expect_args(operator, 1, len(u["args"]))
-					return {"type": "mathop",
-							"operator": operator,
-							"NUM": u["args"][0]}
-				return f
-
-			def unknown_func(u):
-				raise Exception(f"The function {u['name']} does not exist")
-
-			return {
-					"abs": unary_func("abs"),
-					"floor": unary_func("floor"),
-					"ceiling": unary_func("ceiling"),
-					"sqrt": unary_func("sqrt"),
-					"sin": unary_func("sin"),
-					"cos": unary_func("cos"),
-					"tan": unary_func("tan"),
-					"asin": unary_func("asin"),
-					"acos": unary_func("acos"),
-					"atan": unary_func("atan"),
-					"ln": unary_func("ln"),
-					"log": unary_func("log"),
-					"exp": unary_func("e ^"),
-					"pow": unary_func("10 ^"),
-					}.get(t["name"], unknown_func)(t)
-
 		def basic_scratchify(*args):
 			def f(t):
 				for i in args:
@@ -54,7 +23,7 @@ def scratchify(tree):
 				"operator_not": basic_scratchify("OPERAND"),
 				"procedures_definition": basic_scratchify("body"),
 				"procedures_call": basic_scratchify("args"),
-				"func_call": func_call,
+				"func_call": basic_scratchify("args"),
 				"control_if": basic_scratchify("CONDITION", "true_branch"),
 				"control_if_else": basic_scratchify("CONDITION", "true_branch",
 					"false_branch"),

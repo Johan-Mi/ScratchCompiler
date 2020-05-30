@@ -1,7 +1,7 @@
 scene {
 	func main() {
-		if exp(3) == 1000 {
-			print(abs(-3.14));
+		if pow(3) == 1000 {
+			print(abs(cos(3.14159265)));
 		}
 	}
 }
