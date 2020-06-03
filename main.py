@@ -9,6 +9,7 @@ from lark import Lark
 
 from transformer import GrammarTransformer
 from optimize import optimize
+from scratchify import scratchify
 
 with open("grammar.lark") as f:
 	grammar = f.read()
@@ -20,26 +21,28 @@ def main():
 		sourceCode = f.read()
 	parsed = parser.parse(sourceCode)
 	parsed = optimize(parsed)
+	parsed = scratchify(parsed)
+
+	backdropMd5 = md5sum("resources/backdrop.svg")
+
+	parsed["targets"][0]["costumes"] = [
+		{
+			"assetId": backdropMd5,
+			"name": "backdrop",
+			"md5ext": "%s.svg" % backdropMd5,
+			"dataFormat": "svg",
+			"rotationCenterX": 240,
+			"rotationCenterY": 180,
+		},
+	]
 
 	try:
 		with open("parsed.json", "w") as f:
 			json.dump(parsed, f, indent="\t")
-	except TypeError:
+	except ValueError:
 		print(parsed)
 
-	# backdropMd5 = md5sum("resources/backdrop.svg")
-
-	# variables = {
-
-	# }
-
-	# lists = {
-	# 	"console": [
-	# 		"Line 1", "Line 2",
-	# 		"Line 3",
-	# 		"Line 4",
-	# 	],
-	# }
+	createProjectFiles(parsed)
 
 	# listMonitors = [
 	# 	{
@@ -92,82 +95,25 @@ def main():
 	# 		"visible": True,
 	# 	} for mon in varMonitors]
 
-	# blocks = {
-	# 	"block_1": {
-	# 		"opcode": "event_whenflagclicked",
-	# 		"next": None,
-	# 		"parent": None,
-	# 		"inputs": {},
-	# 		"fields": {},
-	# 		"shadow": False,
-	# 		"topLevel": True,
+def md5sum(filename):
+	with open(filename, "rb") as f:
+		return md5(f.read()).hexdigest()
 
-	# 		"x": 0,
-	# 		"y": 0,
-	# 	},
-	# }
+def createProjectFiles(project):
+	try:
+		shutil.rmtree("project")
+	except FileNotFoundError:
+		pass
+	os.mkdir("project")
 
-	# stage = {
-	# 	"isStage": True,
-	# 	"name": "Stage",
-	# 	"variables": { "var_%s" % name : [name, value]
-	# 		for name, value in variables.items() },
-	# 	"lists": { "var_%s" % name : [name, value]
-	# 		for name, value in lists.items() },
-	# 	"broadcasts": {},
-	# 	"blocks": blocks,
-	# 	"comments": {},
-	# 	"currentCostume": 0,
-	# 	"costumes": [
-	# 		{
-	# 			"assetId": backdropMd5,
-	# 			"name": "backdrop",
-	# 			"md5ext": "%s.svg" % backdropMd5,
-	# 			"dataFormat": "svg",
-	# 			"rotationCenterX": 240,
-	# 			"rotationCenterY": 180,
-	# 		},
-	# 	],
-	# 	"sounds": [],
-	# 	"volume": 0,
-	# 	"layerOrder": 0,
+	with open("project/project.json", "w") as f:
+		json.dump(project, f)
 
-	# 	"tempo": 0,
-	# 	"videoTransparency": 0,
-	# 	"videoState": "off",
-	# }
+	shutil.copy("resources/backdrop.svg",
+			"project/%s.svg" % project["targets"][0]["costumes"][0]["assetId"])
 
-	# project = {
-	# 	"targets": [stage],
-	# 	"monitors": monitors,
-	# 	"meta": {
-	# 		"semver": "3.0.0",
-	# 		"vm": "0.0.0",
-	# 		"agent": "",
-	# 	},
-	# }
-
-	# createProjectFiles(project)
-
-# def md5sum(filename):
-	# with open(filename, "rb") as f:
-	# 	return md5(f.read()).hexdigest()
-
-# def createProjectFiles(project):
-	# try:
-	# 	shutil.rmtree("project")
-	# except FileNotFoundError:
-	# 	pass
-	# os.mkdir("project")
-
-	# with open("project/project.json", "w+") as f:
-	# 	f.write(dumps(project))
-
-	# shutil.copy("resources/backdrop.svg",
-	# 		"project/%s.svg" % project["targets"][0]["costumes"][0]["assetId"])
-
-	# os.system("zip --quiet -r project.sb3 project")
-	# shutil.rmtree("project")
+	os.system("zip --quiet -r project.sb3 project")
+	shutil.rmtree("project")
 
 if __name__ == "__main__":
 	main()

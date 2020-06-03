@@ -1,9 +1,10 @@
-start			: (scene_def|sprite_def|var_decl|arr_decl)*
-scene_def		: "scene" "{" (proc_def|costume_list)* "}"	-> scene_def
+start			: (stage_def|sprite_def|var_decl|arr_decl)*
+stage_def		: "stage" "{" (proc_def|costume_list)* "}"	-> stage_def
 sprite_def		: "sprite" ident "{" _sprite_content "}"	-> sprite_def
 _sprite_content	: (proc_def|var_decl|arr_decl|costume_list)*
 costume_list	: "costumes" "{" [string ("," string)*] "}"	-> costume_list
 proc_def		: "func" ident "(" param_list ")" block_stmt-> proc_def
+				| "warp" "func" ident "(" param_list ")" block_stmt-> proc_def_warp
 param_list		: [ident ("," ident)*]						-> param_list
 func_call		: ident "(" arg_list ")"					-> func_call
 procedures_call	: ident "(" arg_list ")"					-> procedures_call

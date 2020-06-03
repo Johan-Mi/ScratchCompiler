@@ -1,7 +1,8 @@
-scene {
-	func main() {
-		if pow(3) == 1000 {
-			print(abs(cos(3.14159265)));
-		}
+var x;
+arr y;
+
+stage {
+	func main(argc, argv, envp) {
+		glideToXY(120, 200, 2);
 	}
 }

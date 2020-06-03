@@ -1,24 +1,29 @@
 from lark import Transformer
 
+def expect_args(name, count, provided):
+	if count != provided:
+		raise Exception(f"{name} expected {count} arguments but \
+				{provided} were provided")
+
 class GrammarTransformer(Transformer):
 	def start(args):
-		scene = [i for i in args if i["type"] == "scene_def"]
-		if len(scene) > 1:
-			raise Exception("Scene defined multiple times")
-		scene = scene[0] if scene else {"type": "scene_def", "procedures": []}
-		scene["variables"] = \
+		stage = [i for i in args if i["type"] == "stage_def"]
+		if len(stage) > 1:
+			raise Exception("stage defined multiple times")
+		stage = stage[0] if stage else {"type": "stage_def", "procedures": []}
+		stage["variables"] = \
 			[i["name"] for i in args if i["type"] == "var_decl"]
-		scene["lists"] = [i["name"] for i in args if i["type"] == "arr_decl"]
+		stage["lists"] = [i["name"] for i in args if i["type"] == "arr_decl"]
 		return {"type": "program",
-				"scene": scene,
+				"stage": stage,
 				"sprites": [i for i in args if i["type"] == "sprite_def"]}
-	def scene_def(args):
+	def stage_def(args):
 		costumes = [i for i in args
 				if type(i) is dict and i["type"] == "costume_list"]
 		if len(costumes) > 1:
-			raise Exception("Scene has multiple costume lists")
+			raise Exception("stage has multiple costume lists")
 		costumes = costumes[0]["costumes"] if costumes else []
-		return {"type": "scene_def",
+		return {"type": "stage_def",
 				"costumes": costumes,
 				"procedures":
 				[i for i in args if type(i) is dict
@@ -48,15 +53,17 @@ class GrammarTransformer(Transformer):
 	proc_def = lambda args: {"type": "procedures_definition",
 			"name": args[0]["name"],
 			"params": args[1]["params"],
+			"warp": "false",
+			"body": args[2]["body"]["stmts"]}
+	proc_def_warp = lambda args: {"type": "procedures_definition",
+			"name": args[0]["name"],
+			"params": args[1]["params"],
+			"warp": "true",
 			"body": args[2]["body"]["stmts"]}
 	param_list = lambda args: {"type": "param_list",
 			"params": [{"type": "param", "name": p["name"]} for p in args]}
-	def func_call(args):
-		def expect_args(name, count, provided):
-			if count != provided:
-				raise Exception(f"{name} expected {count} arguments but \
-						{provided} were provided")
 
+	def func_call(args):
 		def unary_math_func(operator):
 			def f(u):
 				expect_args(operator, 1, len(u["args"]))
@@ -67,6 +74,29 @@ class GrammarTransformer(Transformer):
 
 		def unknown_func(u):
 			raise Exception(f"The function {u['name']} does not exist")
+
+		def random(u):
+			expect_args("random", 2, len(u["args"]))
+			return {"type": "operator_random",
+					"FROM": u["args"][0],
+					"TO": u["args"][1]}
+
+		def length(u):
+			expect_args("length", 1, len(u["args"]))
+			return {"type": "operator_length",
+					"STRING": u["args"][0]}
+
+		def join(u):
+			expect_args("join", 2, len(u["args"]))
+			return {"type": "operator_join",
+					"STRING1": u["args"][0],
+					"STRING2": u["args"][1]}
+
+		def contains(u):
+			expect_args("contains", 2, len(u["args"]))
+			return {"type": "operator_contains",
+					"STRING1": u["args"][0],
+					"STRING2": u["args"][1]}
 
 		t = {"name": args[0]["name"],
 				"args": args[1]["args"]}
@@ -86,13 +116,61 @@ class GrammarTransformer(Transformer):
 				"log": unary_math_func("log"),
 				"exp": unary_math_func("e ^"),
 				"pow": unary_math_func("10 ^"),
+				"random": random,
+				"join": join,
+				"contains": contains,
 				}.get(t["name"], unknown_func)(t)
-		# return {"type": "func_call",
-		# 		"name": args[0]["name"],
-		# 		"args": args[1]["args"]}
-	procedures_call = lambda args: {"type": "procedures_call",
-			"name": args[0]["name"],
-			"args": args[1]["args"]}
+	def procedures_call(args):
+		def move_steps(u):
+			expect_args("moveSteps", 1, len(u["args"]))
+			return {"type": "motion_movesteps",
+					"STEPS": u["args"][0]}
+
+		def go_to_xy(u):
+			expect_args("goToXY", 2, len(u["args"]))
+			return {"type": "motion_gotoxy",
+					"X": u["args"][0],
+					"Y": u["args"][1]}
+
+		def turn_right(u):
+			expect_args("turnRight", 1, len(u["args"]))
+			return {"type": "motion_turnright",
+					"DEGREES": u["args"][0]}
+
+		def turn_left(u):
+			expect_args("turnLeft", 1, len(u["args"]))
+			return {"type": "motion_turnleft",
+					"DEGREES": u["args"][0]}
+
+		def point_in_direction(u):
+			expect_args("pointInDirection", 1, len(u["args"]))
+			return {"type": "motion_pointindirection",
+					"DIRECTION": u["args"][0]}
+
+		def glide_secs_to_xy(u):
+			expect_args("glideToXY", 3, len(u["args"]))
+			return {"type": "motion_glidesecstoxy",
+					"X": u["args"][0],
+					"Y": u["args"][1],
+					"SECS": u["args"][2]}
+
+		def if_on_edge_bounce(u):
+			expect_args("ifOnEdgeBounce", 0, len(u["args"]))
+			return {"type": "motion_ifonedgebounce"}
+
+		t = {"type": "procedures_call",
+				"name": args[0]["name"],
+				"args": args[1]["args"]}
+
+		return {
+				"moveSteps": move_steps,
+				"goToXY": go_to_xy,
+				"turnRight": turn_right,
+				"turnLeft": turn_left,
+				"pointInDirection": point_in_direction,
+				"glideToXY": glide_secs_to_xy,
+				"ifOnEdgeBounce": if_on_edge_bounce,
+				}.get(t["name"], lambda x: x)(t)
 	number = lambda args: float(args[0])
 	string = lambda args: args[0][1:-1]
 	arg_list = lambda args: {"type": "arg_list",

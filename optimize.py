@@ -1,6 +1,6 @@
 import operator
 import math
-from cast import toBool, toNumber
+from cast import toBool, toNumber, toString
 
 def optimize(tree):
 	if type(tree) is dict:
@@ -54,6 +54,28 @@ def optimize(tree):
 				return t
 			else:
 				return "false" if toBool(t["OPERAND"]) else "true"
+
+		def operator_length(t):
+			basic_optimize(t, "STRING")
+			if type(t["STRING"]) is dict:
+				return t
+			else:
+				return len(toString(t["STRING"]))
+
+		def operator_join(t):
+			basic_optimize(t, "STRING1", "STRING2")
+			if type(t["STRING1"]) is dict or type(t["STRING2"]) is dict:
+				return t
+			else:
+				return toString(t["STRING1"]) + toString(t["STRING2"])
+
+		def operator_contains(t):
+			basic_optimize(t, "STRING1", "STRING2")
+			if type(t["STRING1"]) is dict or type(t["STRING2"]) is dict:
+				return t
+			else:
+				return "true" if toString(t["STRING2"]).lower() in \
+						toString(t["STRING1"]).lower() else "false"
 
 		def procedures_definition(t):
 			basic_optimize(t, "body")
@@ -111,7 +133,7 @@ def optimize(tree):
 			basic_optimize(t, "value")
 			return t
 
-		def scene_def(t):
+		def stage_def(t):
 			basic_optimize(t, "procedures")
 			return t
 
@@ -120,7 +142,7 @@ def optimize(tree):
 			return t
 
 		def program(t):
-			basic_optimize(t, "scene", "sprites")
+			basic_optimize(t, "stage", "sprites")
 			return t
 
 		def mathop(t):
@@ -157,6 +179,9 @@ def optimize(tree):
 				"operator_and":	operator_and,
 				"operator_or": operator_or,
 				"operator_not": operator_not,
+				"operator_length": operator_length,
+				"operator_join": operator_join,
+				"operator_contains": operator_contains,
 				"procedures_definition": procedures_definition,
 				"procedures_call": procedures_call,
 				"control_if": control_if,
@@ -167,7 +192,7 @@ def optimize(tree):
 				"control_repeat": control_repeat,
 				"data_setvariableto": data_setvariableto,
 				"data_changevariableby": data_changevariableby,
-				"scene_def": scene_def,
+				"stage_def": stage_def,
 				"sprite_def": sprite_def,
 				"program": program,
 				"mathop": mathop,

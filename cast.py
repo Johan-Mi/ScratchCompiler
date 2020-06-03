@@ -15,3 +15,6 @@ def toNumber(v):
 		return 0 if isnan(n) else n
 	except ValueError:
 		return 0
+
+def toString(v):
+	return str(v)
