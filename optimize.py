@@ -109,7 +109,8 @@ def optimize(tree):
 			if type(t["CONDITION"]) is dict:
 				return t
 			else:
-				return {"type": "control_forever",
+				return {
+						"type": "control_forever",
 						"body": t["body"]} if toBool(t["CONDITION"]) else None
 
 		def control_repeat_until(t):
@@ -118,7 +119,8 @@ def optimize(tree):
 				return t
 			else:
 				return None if toBool(t["CONDITION"]) \
-						else {"type": "control_forever",
+						else {
+								"type": "control_forever",
 								"body": t["body"]}
 
 		def control_repeat(t):

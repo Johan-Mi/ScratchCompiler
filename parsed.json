@@ -3,70 +3,18 @@
 		{
 			"isStage": true,
 			"name": "Stage",
-			"variables": {
-				"var_x": [
-					"x",
-					0
-				]
-			},
-			"lists": {
-				"arr_y": [
-					"y",
-					[]
-				]
-			},
+			"variables": {},
+			"lists": {},
 			"broadcasts": {},
 			"blocks": {
 				"_1": {
-					"opcode": "argument_reporter_string_number",
-					"next": null,
-					"parent": "_5",
-					"inputs": {},
-					"fields": {
-						"VALUE": [
-							"argc",
-							null
-						]
-					},
-					"shadow": false,
-					"topLevel": false
-				},
-				"_2": {
-					"opcode": "argument_reporter_string_number",
-					"next": null,
-					"parent": "_5",
-					"inputs": {},
-					"fields": {
-						"VALUE": [
-							"argv",
-							null
-						]
-					},
-					"shadow": false,
-					"topLevel": false
-				},
-				"_3": {
-					"opcode": "argument_reporter_string_number",
-					"next": null,
-					"parent": "_5",
-					"inputs": {},
-					"fields": {
-						"VALUE": [
-							"envp",
-							null
-						]
-					},
-					"shadow": false,
-					"topLevel": false
-				},
-				"_4": {
 					"opcode": "procedures_definition",
-					"next": "_9",
+					"next": "_3",
 					"parent": null,
 					"inputs": {
 						"custom_block": [
 							1,
-							"_5"
+							"_2"
 						]
 					},
 					"fields": {},
@@ -75,61 +23,76 @@
 					"x": 0,
 					"y": 0
 				},
-				"_5": {
+				"_2": {
 					"opcode": "procedures_prototype",
 					"next": null,
-					"parent": "_4",
-					"inputs": {
-						"_6": [
-							1,
-							"_1"
-						],
-						"_7": [
-							1,
-							"_2"
-						],
-						"_8": [
-							1,
-							"_3"
-						]
-					},
+					"parent": "_1",
+					"inputs": {},
 					"fields": {},
 					"shadow": true,
 					"topLevel": false,
 					"mutation": {
 						"tagName": "mutation",
 						"children": [],
-						"proccode": "main %s %s %s",
-						"argumentids": "[\"_6\", \"_7\", \"_8\"]",
-						"argumentnames": "[\"argc\", \"argv\", \"envp\"]",
-						"argumentdefaults": "[\"\", \"\", \"\"]",
+						"proccode": "onFlagClicked",
+						"argumentids": "[]",
+						"argumentnames": "[]",
+						"argumentdefaults": "[]",
 						"warp": "false"
 					}
 				},
-				"_9": {
-					"opcode": "motion_glidesecstoxy",
+				"_3": {
+					"opcode": "motion_movesteps",
+					"next": null,
+					"parent": "_1",
+					"inputs": {
+						"STEPS": [
+							1,
+							"_4"
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": false
+				},
+				"_4": {
+					"opcode": "operator_equals",
+					"next": null,
+					"parent": "_3",
+					"inputs": {
+						"OPERAND1": [
+							1,
+							"_5"
+						],
+						"OPERAND2": [
+							1,
+							[
+								4,
+								7.0
+							]
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": false
+				},
+				"_5": {
+					"opcode": "operator_random",
 					"next": null,
 					"parent": "_4",
 					"inputs": {
-						"X": [
+						"FROM": [
 							1,
 							[
 								4,
-								120.0
+								1.0
 							]
 						],
-						"Y": [
+						"TO": [
 							1,
 							[
 								4,
-								200.0
-							]
-						],
-						"SECS": [
-							1,
-							[
-								4,
-								2.0
+								10.0
 							]
 						]
 					},

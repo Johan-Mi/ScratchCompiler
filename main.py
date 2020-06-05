@@ -4,7 +4,6 @@ import os
 import json
 import shutil
 from hashlib import md5
-from enum import Enum
 from lark import Lark
 
 from transformer import GrammarTransformer
@@ -25,16 +24,14 @@ def main():
 
 	backdropMd5 = md5sum("resources/backdrop.svg")
 
-	parsed["targets"][0]["costumes"] = [
-		{
+	for i in parsed["targets"]:
+		i["costumes"] = [{
 			"assetId": backdropMd5,
 			"name": "backdrop",
-			"md5ext": "%s.svg" % backdropMd5,
+			"md5ext": f"{backdropMd5}.svg",
 			"dataFormat": "svg",
 			"rotationCenterX": 240,
-			"rotationCenterY": 180,
-		},
-	]
+			"rotationCenterY": 180}]
 
 	try:
 		with open("parsed.json", "w") as f:

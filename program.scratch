@@ -1,8 +1,5 @@
-var x;
-arr y;
-
 stage {
-	func main(argc, argv, envp) {
-		glideToXY(120, 200, 2);
+	func onFlagClicked() {
+		moveSteps(random(1, 10) == 7);
 	}
 }
