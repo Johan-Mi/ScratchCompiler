@@ -1,5 +1,17 @@
 stage {
+	func main(argc, argv) {
+		glideToXY(10, 20, 1.5);
+	}
+}
+
+sprite sprite1 {
 	func onFlagClicked() {
-		moveSteps(random(1, 10) == 7);
+		if random(0, 1) == 1 {
+			turnLeft(90);
+			moveSteps(20);
+		} else {
+			goToXY(20, 40);
+			turnRight(45);
+		}
 	}
 }

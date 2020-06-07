@@ -1,8 +1,6 @@
-from functools import reduce
 import operator
 
 currID = 0
-
 def nextID():
 	global currID
 	currID += 1
@@ -15,13 +13,20 @@ def scratchify(tree, env=None):
 				if type(i[0]) is tuple:
 					i[0][1]["parent"] = parent_id
 
+		def doubly_link_stms(first, rest):
+			if len(rest):
+				rest[0][0][1]["parent"] = first[0]
+				for i in range(len(rest) - 1):
+					rest[i][0][1]["next"] = rest[i + 1][0][0]
+					rest[i + 1][0][1]["parent"] = rest[i][0][0]
+
 		def stage_def(t):
-			return reduce(operator.add, (
+			return sum((
 				scratchify(i, env)
 				for i in t["procedures"]), [])
 
 		def sprite_def(t):
-			return reduce(operator.add, (
+			return sum((
 				scratchify(i, env)
 				for i in t["procedures"]), [])
 
@@ -69,27 +74,20 @@ def scratchify(tree, env=None):
 			body = [
 					scratchify(i, env)
 					for i in t["body"]]
+			if len(body):
+				definition[1]["next"] = body[0][0][0]
 
 			prototype[1]["mutation"]["argumentids"] = str(list(
 				prototype[1]["inputs"])).replace("'", "\"")
-			if len(body):
-				definition[1]["next"] = body[0][0][0]
-				body[0][0][1]["parent"] = definition[0]
 
 			for i in params:
 				i[1]["parent"] = prototype[0]
-			for i in range(1, len(body)):
-				if type(body[i][0]) is tuple:
-					body[i][0][1]["parent"] = body[i - 1][0][0]
-			for i in range(len(body) - 1):
-				if type(body[i][0]) is tuple:
-					body[i][0][1]["next"] = body[i + 1][0][0]
+
+			doubly_link_stms(definition, body)
 
 			params.append(definition)
 			params.append(prototype)
-			for i in body:
-				params += i
-			return params
+			return sum(body, params)
 
 		def param(t):
 			t["id"] = nextID()
@@ -206,23 +204,61 @@ def scratchify(tree, env=None):
 				"topLevel": False})] + x + y + secs
 
 		def control_if(t):
-			# TODO Make this actually work
 			t["id"] = nextID()
+
 			condition = scratchify(t["CONDITION"], env)
-			substack = scratchify(t["true_branch"], env)
-			assign_parent(t["id"], condition, substack)
-			return [(t["id"], {
+			assign_parent(t["id"], condition)
+
+			substack = [
+					scratchify(i, env)
+					for i in t["true_branch"]]
+
+			if_stmt = (t["id"], {
 				"opcode": "control_if",
 				"next": None,
 				"parent": None,
 				"inputs": {
 					"CONDITION": [2, condition[0][0]],
-					"SUBSTACK": [2, substack[0][0]]},
+					"SUBSTACK": [2, substack[0][0][0]]},
 				"fields": {},
 				"shadow": False,
-				"topLevel": False})] + condition + substack
+				"topLevel": False})
 
-		def binary_arithmetic_operator(op):
+			doubly_link_stms(if_stmt, substack)
+
+			return sum(substack, [if_stmt] + condition)
+
+		def control_if_else(t):
+			t["id"] = nextID()
+
+			condition = scratchify(t["CONDITION"], env)
+			assign_parent(t["id"], condition)
+
+			substack = [
+					scratchify(i, env)
+					for i in t["true_branch"]]
+			substack2 = [
+					scratchify(i, env)
+					for i in t["false_branch"]]
+
+			if_stmt = (t["id"], {
+				"opcode": "control_if_else",
+				"next": None,
+				"parent": None,
+				"inputs": {
+					"CONDITION": [2, condition[0][0]],
+					"SUBSTACK": [2, substack[0][0][0]],
+					"SUBSTACK2": [2, substack2[0][0][0]]},
+				"fields": {},
+				"shadow": False,
+				"topLevel": False})
+
+			doubly_link_stms(if_stmt, substack)
+			doubly_link_stms(if_stmt, substack2)
+
+			return sum(substack + substack2, [if_stmt] + condition)
+
+		def bin_numeric_op(op):
 			def f(t):
 				t["id"] = nextID()
 				num1 = scratchify(t["NUM1"], env)
@@ -322,34 +358,35 @@ def scratchify(tree, env=None):
 				"videoState": "off"}
 
 			targets = [stage]
-			for i in t["sprites"]:
-				for j in i["variables"]:
+			for i, spr in enumerate(t["sprites"]):
+				for j in spr["variables"]:
 					j["id"] = nextID()
-				for j in i["lists"]:
+				for j in spr["lists"]:
 					j["id"] = nextID()
 
+				global layerOrder
 				targets.append({
 					"isStage": False,
-					"name": i["name"],
+					"name": spr["name"],
 					"variables": {
 						j["id"]: [j["name"], 0]
-						for j in i["variables"]},
+						for j in spr["variables"]},
 					"lists": {
 						j["id"]: [j["name"], []]
-						for j in i["lists"]},
+						for j in spr["lists"]},
 					"broadcasts": {},
 					"blocks": dict(
-						i
-						for i in scratchify(i, env or {
+						j
+						for j in scratchify(spr, env or {
 							"stage": t["stage"],
-							"sprite": i})
-						if type(i) is tuple),
+							"sprite": spr})
+						if type(j) is tuple),
 					"comments": {},
 					"currentCostume": 0,
 					"costumes": [],
 					"sounds": [],
 					"volume": 0,
-					"layerOrder": 0,
+					"layerOrder": i + 1,
 
 					"visible": True,
 					"x": 0,
@@ -370,14 +407,11 @@ def scratchify(tree, env=None):
 			return project
 
 		return {
-				"operator_add": binary_arithmetic_operator("operator_add"),
-				"operator_subtract":
-				binary_arithmetic_operator("operator_subtract"),
-				"operator_multiply":
-				binary_arithmetic_operator("operator_multiply"),
-				"operator_divide":
-				binary_arithmetic_operator("operator_divide"),
-				"operator_mod": binary_arithmetic_operator("operator_mod"),
+				"operator_add": bin_numeric_op("operator_add"),
+				"operator_subtract": bin_numeric_op("operator_subtract"),
+				"operator_multiply": bin_numeric_op("operator_multiply"),
+				"operator_divide": bin_numeric_op("operator_divide"),
+				"operator_mod": bin_numeric_op("operator_mod"),
 				"operator_equals": binary_logic_operator("operator_equals"),
 				"operator_gt": binary_logic_operator("operator_gt"),
 				"operator_lt": binary_logic_operator("operator_lt"),
@@ -388,7 +422,7 @@ def scratchify(tree, env=None):
 				"procedures_definition": procedures_definition,
 				# "procedures_call": nop,
 				"control_if": control_if,
-				# "control_if_else": nop,
+				"control_if_else": control_if_else,
 				# "control_forever": nop,
 				# "control_while": nop,
 				# "control_repeat_until": nop,

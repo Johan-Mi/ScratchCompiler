@@ -7,14 +7,42 @@
 			"lists": {},
 			"broadcasts": {},
 			"blocks": {
+				"_2": {
+					"opcode": "argument_reporter_string_number",
+					"next": null,
+					"parent": "_4",
+					"inputs": {},
+					"fields": {
+						"VALUE": [
+							"argc",
+							null
+						]
+					},
+					"shadow": false,
+					"topLevel": false
+				},
+				"_3": {
+					"opcode": "argument_reporter_string_number",
+					"next": null,
+					"parent": "_4",
+					"inputs": {},
+					"fields": {
+						"VALUE": [
+							"argv",
+							null
+						]
+					},
+					"shadow": false,
+					"topLevel": false
+				},
 				"_1": {
 					"opcode": "procedures_definition",
-					"next": "_3",
+					"next": "_7",
 					"parent": null,
 					"inputs": {
 						"custom_block": [
 							1,
-							"_2"
+							"_4"
 						]
 					},
 					"fields": {},
@@ -23,76 +51,57 @@
 					"x": 0,
 					"y": 0
 				},
-				"_2": {
+				"_4": {
 					"opcode": "procedures_prototype",
 					"next": null,
 					"parent": "_1",
-					"inputs": {},
+					"inputs": {
+						"_5": [
+							1,
+							"_2"
+						],
+						"_6": [
+							1,
+							"_3"
+						]
+					},
 					"fields": {},
 					"shadow": true,
 					"topLevel": false,
 					"mutation": {
 						"tagName": "mutation",
 						"children": [],
-						"proccode": "onFlagClicked",
-						"argumentids": "[]",
-						"argumentnames": "[]",
-						"argumentdefaults": "[]",
+						"proccode": "main %s %s",
+						"argumentids": "[\"_5\", \"_6\"]",
+						"argumentnames": "[\"argc\", \"argv\"]",
+						"argumentdefaults": "[\"\", \"\"]",
 						"warp": "false"
 					}
 				},
-				"_3": {
-					"opcode": "motion_movesteps",
+				"_7": {
+					"opcode": "motion_glidesecstoxy",
 					"next": null,
 					"parent": "_1",
 					"inputs": {
-						"STEPS": [
-							1,
-							"_4"
-						]
-					},
-					"fields": {},
-					"shadow": false,
-					"topLevel": false
-				},
-				"_4": {
-					"opcode": "operator_equals",
-					"next": null,
-					"parent": "_3",
-					"inputs": {
-						"OPERAND1": [
-							1,
-							"_5"
-						],
-						"OPERAND2": [
-							1,
-							[
-								4,
-								7.0
-							]
-						]
-					},
-					"fields": {},
-					"shadow": false,
-					"topLevel": false
-				},
-				"_5": {
-					"opcode": "operator_random",
-					"next": null,
-					"parent": "_4",
-					"inputs": {
-						"FROM": [
-							1,
-							[
-								4,
-								1.0
-							]
-						],
-						"TO": [
+						"X": [
 							1,
 							[
 								4,
 								10.0
+							]
+						],
+						"Y": [
+							1,
+							[
+								4,
+								20.0
+							]
+						],
+						"SECS": [
+							1,
+							[
+								4,
+								1.5
 							]
 						]
 					},
@@ -119,6 +128,213 @@
 			"tempo": 0,
 			"videoTransparency": 0,
 			"videoState": "off"
+		},
+		{
+			"isStage": false,
+			"name": "sprite1",
+			"variables": {},
+			"lists": {},
+			"broadcasts": {},
+			"blocks": {
+				"_8": {
+					"opcode": "procedures_definition",
+					"next": "_10",
+					"parent": null,
+					"inputs": {
+						"custom_block": [
+							1,
+							"_9"
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": true,
+					"x": 0,
+					"y": 0
+				},
+				"_9": {
+					"opcode": "procedures_prototype",
+					"next": null,
+					"parent": "_8",
+					"inputs": {},
+					"fields": {},
+					"shadow": true,
+					"topLevel": false,
+					"mutation": {
+						"tagName": "mutation",
+						"children": [],
+						"proccode": "onFlagClicked",
+						"argumentids": "[]",
+						"argumentnames": "[]",
+						"argumentdefaults": "[]",
+						"warp": "false"
+					}
+				},
+				"_10": {
+					"opcode": "control_if_else",
+					"next": null,
+					"parent": "_8",
+					"inputs": {
+						"CONDITION": [
+							2,
+							"_11"
+						],
+						"SUBSTACK": [
+							2,
+							"_13"
+						],
+						"SUBSTACK2": [
+							2,
+							"_15"
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": false
+				},
+				"_11": {
+					"opcode": "operator_equals",
+					"next": null,
+					"parent": "_10",
+					"inputs": {
+						"OPERAND1": [
+							1,
+							"_12"
+						],
+						"OPERAND2": [
+							1,
+							[
+								4,
+								1.0
+							]
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": false
+				},
+				"_12": {
+					"opcode": "operator_random",
+					"next": null,
+					"parent": "_11",
+					"inputs": {
+						"FROM": [
+							1,
+							[
+								4,
+								0.0
+							]
+						],
+						"TO": [
+							1,
+							[
+								4,
+								1.0
+							]
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": false
+				},
+				"_13": {
+					"opcode": "motion_turnleft",
+					"next": "_14",
+					"parent": "_10",
+					"inputs": {
+						"DEGREES": [
+							1,
+							[
+								4,
+								90.0
+							]
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": false
+				},
+				"_14": {
+					"opcode": "motion_movesteps",
+					"next": null,
+					"parent": "_13",
+					"inputs": {
+						"STEPS": [
+							1,
+							[
+								4,
+								20.0
+							]
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": false
+				},
+				"_15": {
+					"opcode": "motion_gotoxy",
+					"next": "_16",
+					"parent": "_10",
+					"inputs": {
+						"X": [
+							1,
+							[
+								4,
+								20.0
+							]
+						],
+						"Y": [
+							1,
+							[
+								4,
+								40.0
+							]
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": false
+				},
+				"_16": {
+					"opcode": "motion_turnright",
+					"next": null,
+					"parent": "_15",
+					"inputs": {
+						"DEGREES": [
+							1,
+							[
+								4,
+								45.0
+							]
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": false
+				}
+			},
+			"comments": {},
+			"currentCostume": 0,
+			"costumes": [
+				{
+					"assetId": "73f94eb3aff55f82b7e9ebf6cfdb8fda",
+					"name": "backdrop",
+					"md5ext": "73f94eb3aff55f82b7e9ebf6cfdb8fda.svg",
+					"dataFormat": "svg",
+					"rotationCenterX": 240,
+					"rotationCenterY": 180
+				}
+			],
+			"sounds": [],
+			"volume": 0,
+			"layerOrder": 1,
+			"visible": true,
+			"x": 0,
+			"y": 0,
+			"size": 100,
+			"direction": 90,
+			"draggable": false,
+			"rotationStyle": "all around"
 		}
 	],
 	"monitors": [],

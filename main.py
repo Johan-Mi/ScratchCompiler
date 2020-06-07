@@ -10,12 +10,11 @@ from transformer import GrammarTransformer
 from optimize import optimize
 from scratchify import scratchify
 
-with open("grammar.lark") as f:
-	grammar = f.read()
-
-parser = Lark(grammar, parser="lalr", transformer=GrammarTransformer)
-
 def main():
+	with open("grammar.lark") as f:
+		grammar = f.read()
+	parser = Lark(grammar, parser="lalr", transformer=GrammarTransformer)
+
 	with open("program.scratch") as f:
 		sourceCode = f.read()
 	parsed = parser.parse(sourceCode)
