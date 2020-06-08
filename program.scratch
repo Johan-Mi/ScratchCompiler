@@ -1,17 +1,20 @@
+arr fib;
+
 stage {
-	func main(argc, argv) {
-		glideToXY(10, 20, 1.5);
-	}
+
 }
 
 sprite sprite1 {
+	func f1() {
+		moveSteps(20);
+	}
+
+	func f2(a) {
+		turnRight(90);
+	}
+
 	func onFlagClicked() {
-		if random(0, 1) == 1 {
-			turnLeft(90);
-			moveSteps(20);
-		} else {
-			goToXY(20, 40);
-			turnRight(45);
-		}
+		f1();
+		f2(10);
 	}
 }

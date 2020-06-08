@@ -1,36 +1,66 @@
-import operator
+from typing import Callable
 
 currID = 0
-def nextID():
+def nextID() -> str:
 	global currID
 	currID += 1
 	return f"_{currID}"
 
-def scratchify(tree, env=None):
+def resolve_var(name: str, env) -> str:
+	for i in env["sprite"]["variables"]:
+		if i["name"] == name:
+			return i["id"]
+	for i in env["stage"]["variables"]:
+		if i["name"] == name:
+			return i["id"]
+	raise NameError(f"Identifier '{name}' is not defined")
+
+def resolve_var_or_arr(name: str, env) -> str:
+	for i in env["sprite"]["variables"]:
+		if i["name"] == name:
+			return "var", i["id"]
+	for i in env["sprite"]["lists"]:
+		if i["name"] == name:
+			return "arr", i["id"]
+	for i in env["stage"]["variables"]:
+		if i["name"] == name:
+			return "var", i["id"]
+	for i in env["stage"]["lists"]:
+		if i["name"] == name:
+			return "arr", i["id"]
+	raise NameError(f"Identifier '{name}' is not defined")
+
+def resolve_proc(name: str, env) -> str:
+	for i in env["sprite"]["procedures"]:
+		if i["name"] == name:
+			return i
+	raise NameError(f"Identifier '{name}' is not defined")
+
+def scratchify(tree, env=None) -> list:
 	if type(tree) is dict:
-		def assign_parent(parent_id, *args):
+		def assign_parent(parent_id: str, *args):
 			for i in args:
 				if type(i[0]) is tuple:
 					i[0][1]["parent"] = parent_id
 
-		def doubly_link_stms(first, rest):
+		def doubly_link_stms(first: tuple, rest: list):
 			if len(rest):
 				rest[0][0][1]["parent"] = first[0]
 				for i in range(len(rest) - 1):
 					rest[i][0][1]["next"] = rest[i + 1][0][0]
 					rest[i + 1][0][1]["parent"] = rest[i][0][0]
 
-		def stage_def(t):
+		def stage_def(t: dict) -> list:
 			return sum((
 				scratchify(i, env)
 				for i in t["procedures"]), [])
 
-		def sprite_def(t):
+		def sprite_def(t: dict) -> list:
 			return sum((
 				scratchify(i, env)
 				for i in t["procedures"]), [])
 
-		def procedures_definition(t):
+		def procedures_definition(t: dict) -> list:
 			t["id"] = nextID()
 
 			params = [
@@ -85,11 +115,13 @@ def scratchify(tree, env=None):
 
 			doubly_link_stms(definition, body)
 
+			t["prototype"] = prototype
+
 			params.append(definition)
 			params.append(prototype)
 			return sum(body, params)
 
-		def param(t):
+		def param(t: dict) -> list:
 			t["id"] = nextID()
 			return [(t["id"], {
 				"opcode": "argument_reporter_string_number",
@@ -102,7 +134,7 @@ def scratchify(tree, env=None):
 				"shadow": False,
 				"topLevel": False})]
 
-		def motion_movesteps(t):
+		def motion_movesteps(t: dict) -> list:
 			t["id"] = nextID()
 			steps = scratchify(t["STEPS"], env)
 			assign_parent(t["id"], steps)
@@ -116,7 +148,7 @@ def scratchify(tree, env=None):
 				"shadow": False,
 				"topLevel": False})] + steps
 
-		def motion_gotoxy(t):
+		def motion_gotoxy(t: dict) -> list:
 			t["id"] = nextID()
 			x = scratchify(t["X"], env)
 			y = scratchify(t["Y"], env)
@@ -132,7 +164,7 @@ def scratchify(tree, env=None):
 				"shadow": False,
 				"topLevel": False})] + x + y
 
-		def motion_turnright(t):
+		def motion_turnright(t: dict) -> dict:
 			t["id"] = nextID()
 			degrees = scratchify(t["DEGREES"], env)
 			assign_parent(t["id"], degrees)
@@ -146,7 +178,7 @@ def scratchify(tree, env=None):
 				"shadow": False,
 				"topLevel": False})] + degrees
 
-		def motion_turnleft(t):
+		def motion_turnleft(t: dict) -> dict:
 			t["id"] = nextID()
 			degrees = scratchify(t["DEGREES"], env)
 			assign_parent(t["id"], degrees)
@@ -160,7 +192,7 @@ def scratchify(tree, env=None):
 				"shadow": False,
 				"topLevel": False})] + degrees
 
-		def motion_ifonedgebounce(t):
+		def motion_ifonedgebounce(t: dict) -> list:
 			t["id"] = nextID()
 			return [(t["id"], {
 				"opcode": "motion_ifonedgebounce",
@@ -171,7 +203,7 @@ def scratchify(tree, env=None):
 				"shadow": False,
 				"topLevel": False})]
 
-		def motion_pointindirection(t):
+		def motion_pointindirection(t: dict) -> list:
 			t["id"] = nextID()
 			direction = scratchify(t["DIRECTION"], env)
 			assign_parent(t["id"], direction)
@@ -185,7 +217,7 @@ def scratchify(tree, env=None):
 				"shadow": False,
 				"topLevel": False})] + direction
 
-		def motion_glidesecstoxy(t):
+		def motion_glidesecstoxy(t: dict) -> list:
 			t["id"] = nextID()
 			x = scratchify(t["X"], env)
 			y = scratchify(t["Y"], env)
@@ -203,7 +235,7 @@ def scratchify(tree, env=None):
 				"shadow": False,
 				"topLevel": False})] + x + y + secs
 
-		def control_if(t):
+		def control_if(t: dict) -> list:
 			t["id"] = nextID()
 
 			condition = scratchify(t["CONDITION"], env)
@@ -228,7 +260,7 @@ def scratchify(tree, env=None):
 
 			return sum(substack, [if_stmt] + condition)
 
-		def control_if_else(t):
+		def control_if_else(t: dict) -> list:
 			t["id"] = nextID()
 
 			condition = scratchify(t["CONDITION"], env)
@@ -258,7 +290,103 @@ def scratchify(tree, env=None):
 
 			return sum(substack + substack2, [if_stmt] + condition)
 
-		def bin_numeric_op(op):
+		def control_repeat(t: dict) -> list:
+			t["id"] = nextID()
+
+			times = scratchify(t["TIMES"], env)
+			assign_parent(t["id"], times)
+
+			substack = [
+					scratchify(i, env)
+					for i in t["body"]]
+
+			loop = (t["id"], {
+				"opcode": "control_repeat",
+				"next": None,
+				"parent": None,
+				"inputs": {
+					"TIMES": [1, times[0][0]],
+					"SUBSTACK": [2, substack[0][0][0]]},
+				"fields": {},
+				"shadow": False,
+				"topLevel": False})
+
+			doubly_link_stms(loop, substack)
+
+			return sum(substack, [loop] + times)
+
+		def control_forever(t: dict) -> list:
+			t["id"] = nextID()
+
+			substack = [
+					scratchify(i, env)
+					for i in t["body"]]
+
+			loop = (t["id"], {
+				"opcode": "control_forever",
+				"next": None,
+				"parent": None,
+				"inputs": {
+					"SUBSTACK": [2, substack[0][0][0]]},
+				"fields": {},
+				"shadow": False,
+				"topLevel": False})
+
+			doubly_link_stms(loop, substack)
+
+			return sum(substack, [loop])
+
+		def control_while(t: dict) -> list:
+			t["id"] = nextID()
+
+			condition = scratchify(t["CONDITION"], env)
+			assign_parent(t["id"], condition)
+
+			substack = [
+					scratchify(i, env)
+					for i in t["body"]]
+
+			loop = (t["id"], {
+				"opcode": "control_while",
+				"next": None,
+				"parent": None,
+				"inputs": {
+					"CONDITION": [2, condition[0][0]],
+					"SUBSTACK": [2, substack[0][0][0]]},
+				"fields": {},
+				"shadow": False,
+				"topLevel": False})
+
+			doubly_link_stms(loop, substack)
+
+			return sum(substack, [loop] + condition)
+
+		def control_repeat_until(t: dict) -> list:
+			t["id"] = nextID()
+
+			condition = scratchify(t["CONDITION"], env)
+			assign_parent(t["id"], condition)
+
+			substack = [
+					scratchify(i, env)
+					for i in t["body"]]
+
+			loop = (t["id"], {
+				"opcode": "control_repeat_until",
+				"next": None,
+				"parent": None,
+				"inputs": {
+					"CONDITION": [2, condition[0][0]],
+					"SUBSTACK": [2, substack[0][0][0]]},
+				"fields": {},
+				"shadow": False,
+				"topLevel": False})
+
+			doubly_link_stms(loop, substack)
+
+			return sum(substack, [loop] + condition)
+
+		def bin_numeric_op(op: str) -> Callable:
 			def f(t):
 				t["id"] = nextID()
 				num1 = scratchify(t["NUM1"], env)
@@ -276,7 +404,7 @@ def scratchify(tree, env=None):
 					"topLevel": False})] + num1 + num2
 			return f
 
-		def binary_logic_operator(op):
+		def binary_logic_operator(op: str) -> Callable:
 			def f(t):
 				t["id"] = nextID()
 				operand1 = scratchify(t["OPERAND1"], env)
@@ -294,7 +422,7 @@ def scratchify(tree, env=None):
 					"topLevel": False})] + operand1 + operand2
 			return f
 
-		def operator_not(t):
+		def operator_not(t: dict) -> list:
 			t["id"] = nextID()
 			operand = scratchify(t["OPERAND"], env)
 			assign_parent(t["id"], operand)
@@ -308,7 +436,7 @@ def scratchify(tree, env=None):
 				"shadow": False,
 				"topLevel": False})] + operand
 
-		def operator_random(t):
+		def operator_random(t: dict) -> list:
 			t["id"] = nextID()
 			low = scratchify(t["FROM"], env)
 			high = scratchify(t["TO"], env)
@@ -324,7 +452,90 @@ def scratchify(tree, env=None):
 				"shadow": False,
 				"topLevel": False})] + low + high
 
-		def program(t):
+		def data_setvariableto(t: dict) -> list:
+			t["id"] = nextID()
+			var_id = resolve_var(t["name"], env)
+			value = scratchify(t["value"], env)
+			return [(t["id"], {
+				"opcode": "data_setvariableto",
+				"next": None,
+				"parent": None,
+				"inputs": {
+					"VALUE": [1, value[0][0]]},
+				"fields": {
+					"VARIABLE": [
+						t["name"],
+						var_id]},
+				"shadow": False,
+				"topLevel": False})] + value
+
+		def data_changevariableby(t: dict) -> list:
+			t["id"] = nextID()
+			var_or_arr, var_id = resolve_var_or_arr(t["name"], env)
+			value = scratchify(t["value"], env)
+			if var_or_arr == "var":
+				return [(t["id"], {
+					"opcode": "data_changevariableby",
+					"next": None,
+					"parent": None,
+					"inputs": {
+						"VALUE": [1, value[0][0]]},
+					"fields": {
+						"VARIABLE": [
+							t["name"],
+							var_id]},
+					"shadow": False,
+					"topLevel": False})] + value
+			else:
+				return [(t["id"], {
+					"opcode": "data_addtolist",
+					"next": None,
+					"parent": None,
+					"inputs": {
+						"ITEM": [1, value[0][0]]},
+					"fields": {
+						"LIST": [
+							t["name"],
+							var_id]},
+					"shadow": False,
+					"topLevel": False})] + value
+
+		def procedures_call(t: dict) -> list:
+			# TODO Finish this function
+			t["id"] = nextID()
+
+			proc = resolve_proc(t["name"], env)
+			args = [
+					scratchify(i, env)
+					for i in t["args"]]
+			call = [(t["id"], {
+				"opcode": "procedures_call",
+				"next": None,
+				"parent": None,
+				"inputs": {
+					i: [1, j[0][0]]
+					for i, j in zip(proc["prototype"][1]["inputs"], args)},
+				"fields": {},
+				"shadow": False,
+				"topLevel": False,
+				"mutation": {
+					"tagName": "mutation",
+					"children": [],
+					"proccode": t["name"] + " %s" * len(proc["params"]),
+					"argumentids": str([
+						i
+						for i in proc["prototype"][1]["inputs"]])\
+								.replace("'", "\""),
+					"warp": proc["warp"]}})]
+			return sum(args, call)
+
+		def ident(t: dict) -> list:
+			var_or_arr, var_id = resolve_var_or_arr(t["name"], env)
+			return [[[
+				12 if var_or_arr == "var" else 13,
+				t["name"], var_id]]]
+
+		def program(t: dict) -> list:
 			for i in t["stage"]["variables"]:
 				i["id"] = nextID()
 			for i in t["stage"]["lists"]:
@@ -364,7 +575,6 @@ def scratchify(tree, env=None):
 				for j in spr["lists"]:
 					j["id"] = nextID()
 
-				global layerOrder
 				targets.append({
 					"isStage": False,
 					"name": spr["name"],
@@ -420,15 +630,16 @@ def scratchify(tree, env=None):
 				"operator_not": operator_not,
 				"operator_random": operator_random,
 				"procedures_definition": procedures_definition,
-				# "procedures_call": nop,
+				"procedures_call": procedures_call,
 				"control_if": control_if,
 				"control_if_else": control_if_else,
-				# "control_forever": nop,
-				# "control_while": nop,
-				# "control_repeat_until": nop,
-				# "control_repeat": nop,
-				# "data_setvariableto": nop,
-				# "data_changevariableby": nop,
+				"control_forever": control_forever,
+				"control_while": control_while,
+				"control_repeat_until": control_repeat_until,
+				"control_repeat": control_repeat,
+				"data_setvariableto": data_setvariableto,
+				"data_changevariableby": data_changevariableby,
+				"ident": ident,
 				"stage_def": stage_def,
 				"sprite_def": sprite_def,
 				"program": program,
@@ -443,5 +654,7 @@ def scratchify(tree, env=None):
 				}.get(tree["type"], lambda x: [])(tree)
 	elif type(tree) in (int, float):
 		return [[[4, tree]]]
+	elif type(tree) is str:
+		return [[[10, tree]]]
 	else:
 		return tree

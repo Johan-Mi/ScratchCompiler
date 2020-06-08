@@ -4,112 +4,14 @@
 			"isStage": true,
 			"name": "Stage",
 			"variables": {},
-			"lists": {},
-			"broadcasts": {},
-			"blocks": {
-				"_2": {
-					"opcode": "argument_reporter_string_number",
-					"next": null,
-					"parent": "_4",
-					"inputs": {},
-					"fields": {
-						"VALUE": [
-							"argc",
-							null
-						]
-					},
-					"shadow": false,
-					"topLevel": false
-				},
-				"_3": {
-					"opcode": "argument_reporter_string_number",
-					"next": null,
-					"parent": "_4",
-					"inputs": {},
-					"fields": {
-						"VALUE": [
-							"argv",
-							null
-						]
-					},
-					"shadow": false,
-					"topLevel": false
-				},
-				"_1": {
-					"opcode": "procedures_definition",
-					"next": "_7",
-					"parent": null,
-					"inputs": {
-						"custom_block": [
-							1,
-							"_4"
-						]
-					},
-					"fields": {},
-					"shadow": false,
-					"topLevel": true,
-					"x": 0,
-					"y": 0
-				},
-				"_4": {
-					"opcode": "procedures_prototype",
-					"next": null,
-					"parent": "_1",
-					"inputs": {
-						"_5": [
-							1,
-							"_2"
-						],
-						"_6": [
-							1,
-							"_3"
-						]
-					},
-					"fields": {},
-					"shadow": true,
-					"topLevel": false,
-					"mutation": {
-						"tagName": "mutation",
-						"children": [],
-						"proccode": "main %s %s",
-						"argumentids": "[\"_5\", \"_6\"]",
-						"argumentnames": "[\"argc\", \"argv\"]",
-						"argumentdefaults": "[\"\", \"\"]",
-						"warp": "false"
-					}
-				},
-				"_7": {
-					"opcode": "motion_glidesecstoxy",
-					"next": null,
-					"parent": "_1",
-					"inputs": {
-						"X": [
-							1,
-							[
-								4,
-								10.0
-							]
-						],
-						"Y": [
-							1,
-							[
-								4,
-								20.0
-							]
-						],
-						"SECS": [
-							1,
-							[
-								4,
-								1.5
-							]
-						]
-					},
-					"fields": {},
-					"shadow": false,
-					"topLevel": false
-				}
+			"lists": {
+				"_1": [
+					"fib",
+					[]
+				]
 			},
+			"broadcasts": {},
+			"blocks": {},
 			"comments": {},
 			"currentCostume": 0,
 			"costumes": [
@@ -136,14 +38,14 @@
 			"lists": {},
 			"broadcasts": {},
 			"blocks": {
-				"_8": {
+				"_2": {
 					"opcode": "procedures_definition",
-					"next": "_10",
+					"next": "_4",
 					"parent": null,
 					"inputs": {
 						"custom_block": [
 							1,
-							"_9"
+							"_3"
 						]
 					},
 					"fields": {},
@@ -152,10 +54,131 @@
 					"x": 0,
 					"y": 0
 				},
-				"_9": {
+				"_3": {
 					"opcode": "procedures_prototype",
 					"next": null,
-					"parent": "_8",
+					"parent": "_2",
+					"inputs": {},
+					"fields": {},
+					"shadow": true,
+					"topLevel": false,
+					"mutation": {
+						"tagName": "mutation",
+						"children": [],
+						"proccode": "f1",
+						"argumentids": "[]",
+						"argumentnames": "[]",
+						"argumentdefaults": "[]",
+						"warp": "false"
+					}
+				},
+				"_4": {
+					"opcode": "motion_movesteps",
+					"next": null,
+					"parent": "_2",
+					"inputs": {
+						"STEPS": [
+							1,
+							[
+								4,
+								20.0
+							]
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": false
+				},
+				"_6": {
+					"opcode": "argument_reporter_string_number",
+					"next": null,
+					"parent": "_7",
+					"inputs": {},
+					"fields": {
+						"VALUE": [
+							"a",
+							null
+						]
+					},
+					"shadow": false,
+					"topLevel": false
+				},
+				"_5": {
+					"opcode": "procedures_definition",
+					"next": "_9",
+					"parent": null,
+					"inputs": {
+						"custom_block": [
+							1,
+							"_7"
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": true,
+					"x": 0,
+					"y": 0
+				},
+				"_7": {
+					"opcode": "procedures_prototype",
+					"next": null,
+					"parent": "_5",
+					"inputs": {
+						"_8": [
+							1,
+							"_6"
+						]
+					},
+					"fields": {},
+					"shadow": true,
+					"topLevel": false,
+					"mutation": {
+						"tagName": "mutation",
+						"children": [],
+						"proccode": "f2 %s",
+						"argumentids": "[\"_8\"]",
+						"argumentnames": "[\"a\"]",
+						"argumentdefaults": "[\"\"]",
+						"warp": "false"
+					}
+				},
+				"_9": {
+					"opcode": "motion_turnright",
+					"next": null,
+					"parent": "_5",
+					"inputs": {
+						"DEGREES": [
+							1,
+							[
+								4,
+								90.0
+							]
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": false
+				},
+				"_10": {
+					"opcode": "procedures_definition",
+					"next": "_12",
+					"parent": null,
+					"inputs": {
+						"custom_block": [
+							1,
+							"_11"
+						]
+					},
+					"fields": {},
+					"shadow": false,
+					"topLevel": true,
+					"x": 0,
+					"y": 0
+				},
+				"_11": {
+					"opcode": "procedures_prototype",
+					"next": null,
+					"parent": "_10",
 					"inputs": {},
 					"fields": {},
 					"shadow": true,
@@ -170,147 +193,45 @@
 						"warp": "false"
 					}
 				},
-				"_10": {
-					"opcode": "control_if_else",
-					"next": null,
-					"parent": "_8",
-					"inputs": {
-						"CONDITION": [
-							2,
-							"_11"
-						],
-						"SUBSTACK": [
-							2,
-							"_13"
-						],
-						"SUBSTACK2": [
-							2,
-							"_15"
-						]
-					},
-					"fields": {},
-					"shadow": false,
-					"topLevel": false
-				},
-				"_11": {
-					"opcode": "operator_equals",
-					"next": null,
-					"parent": "_10",
-					"inputs": {
-						"OPERAND1": [
-							1,
-							"_12"
-						],
-						"OPERAND2": [
-							1,
-							[
-								4,
-								1.0
-							]
-						]
-					},
-					"fields": {},
-					"shadow": false,
-					"topLevel": false
-				},
 				"_12": {
-					"opcode": "operator_random",
-					"next": null,
-					"parent": "_11",
-					"inputs": {
-						"FROM": [
-							1,
-							[
-								4,
-								0.0
-							]
-						],
-						"TO": [
-							1,
-							[
-								4,
-								1.0
-							]
-						]
-					},
+					"opcode": "procedures_call",
+					"next": "_13",
+					"parent": "_10",
+					"inputs": {},
 					"fields": {},
 					"shadow": false,
-					"topLevel": false
+					"topLevel": false,
+					"mutation": {
+						"tagName": "mutation",
+						"children": [],
+						"proccode": "f1",
+						"argumentids": "[]",
+						"warp": "false"
+					}
 				},
 				"_13": {
-					"opcode": "motion_turnleft",
-					"next": "_14",
-					"parent": "_10",
-					"inputs": {
-						"DEGREES": [
-							1,
-							[
-								4,
-								90.0
-							]
-						]
-					},
-					"fields": {},
-					"shadow": false,
-					"topLevel": false
-				},
-				"_14": {
-					"opcode": "motion_movesteps",
+					"opcode": "procedures_call",
 					"next": null,
-					"parent": "_13",
+					"parent": "_12",
 					"inputs": {
-						"STEPS": [
+						"_8": [
 							1,
 							[
 								4,
-								20.0
+								10.0
 							]
 						]
 					},
 					"fields": {},
 					"shadow": false,
-					"topLevel": false
-				},
-				"_15": {
-					"opcode": "motion_gotoxy",
-					"next": "_16",
-					"parent": "_10",
-					"inputs": {
-						"X": [
-							1,
-							[
-								4,
-								20.0
-							]
-						],
-						"Y": [
-							1,
-							[
-								4,
-								40.0
-							]
-						]
-					},
-					"fields": {},
-					"shadow": false,
-					"topLevel": false
-				},
-				"_16": {
-					"opcode": "motion_turnright",
-					"next": null,
-					"parent": "_15",
-					"inputs": {
-						"DEGREES": [
-							1,
-							[
-								4,
-								45.0
-							]
-						]
-					},
-					"fields": {},
-					"shadow": false,
-					"topLevel": false
+					"topLevel": false,
+					"mutation": {
+						"tagName": "mutation",
+						"children": [],
+						"proccode": "f2 %s",
+						"argumentids": "[\"_8\"]",
+						"warp": "false"
+					}
 				}
 			},
 			"comments": {},
