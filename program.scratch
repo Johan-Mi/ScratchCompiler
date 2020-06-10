@@ -6,7 +6,9 @@ stage {
 
 sprite sprite1 {
 	func f1() {
-		moveSteps(20);
+        if true {
+            moveSteps(20);
+        }
 	}
 
 	func f2(a) {

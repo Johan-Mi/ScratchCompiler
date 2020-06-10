@@ -1,212 +1,205 @@
+"""This module contains the optimize function, which optimizes an AST."""
 import operator
 import math
-from cast import toBool, toNumber, toString
+from cast import to_bool, to_number, to_string
+
 
 def optimize(tree):
-	if type(tree) is dict:
-		def basic_optimize(t, *args):
-			for i in args:
-				t[i] = optimize(t[i])
+    """Returns an optimized version of an AST."""
+    if isinstance(tree, dict):
 
-		def bin_numeric_op(func):
-			def f(t):
-				basic_optimize(t, "NUM1", "NUM2")
-				if type(t["NUM1"]) is dict or type(t["NUM2"]) is dict:
-					return t
-				else:
-					return func(toNumber(t["NUM1"]), toNumber(t["NUM2"]))
-			return f
+        def basic_optimize(node, *args):
+            for i in args:
+                node[i] = optimize(node[i])
 
-		def bin_equality_op(func):
-			def f(t):
-				basic_optimize(t, "OPERAND1", "OPERAND2")
-				if type(t["OPERAND1"]) is dict or type(t["OPERAND2"]) is dict:
-					return t
-				else:
-					a = t["OPERAND1"]
-					b = t["OPERAND2"]
-					if type(b) is not type(a):
-						b = type(a)(b)
-					return "true" if func(a, b) else "false"
-			return f
+        def bin_numeric_op(func):
+            def generated_func(node):
+                basic_optimize(node, "NUM1", "NUM2")
+                if isinstance(node["NUM1"], dict) \
+                or isinstance(node["NUM2"], dict):
+                    return node
+                return func(to_number(node["NUM1"]), to_number(node["NUM2"]))
 
-		def operator_and(t):
-			basic_optimize(t, "OPERAND1", "OPERAND2")
-			if type(t["OPERAND1"]) is dict or type(t["OPERAND2"]) is dict:
-				return t
-			else:
-				return "true" \
-						if toBool(t["OPERAND1"]) and toBool(t["OPERAND2"]) \
-						else "false"
+            return generated_func
 
-		def operator_or(t):
-			basic_optimize(t, "OPERAND1", "OPERAND2")
-			if type(t["OPERAND1"]) is dict or type(t["OPERAND2"]) is dict:
-				return t
-			else:
-				return "true" \
-						if toBool(t["OPERAND1"]) or toBool(t["OPERAND2"]) \
-						else "false"
+        def bin_equality_op(func):
+            def generated_func(node):
+                basic_optimize(node, "OPERAND1", "OPERAND2")
+                if isinstance(node["OPERAND1"], dict) \
+                or isinstance(node["OPERAND2"], dict):
+                    return node
+                lhs = node["OPERAND1"]
+                rhs = node["OPERAND2"]
+                if type(rhs) is not type(lhs):
+                    rhs = type(lhs)(rhs)
+                return "true" if func(lhs, rhs) else "false"
 
-		def operator_not(t):
-			basic_optimize(t, "OPERAND")
-			if type(t["OPERAND"]) is dict:
-				return t
-			else:
-				return "false" if toBool(t["OPERAND"]) else "true"
+            return generated_func
 
-		def operator_length(t):
-			basic_optimize(t, "STRING")
-			if type(t["STRING"]) is dict:
-				return t
-			else:
-				return len(toString(t["STRING"]))
+        def operator_and(node):
+            basic_optimize(node, "OPERAND1", "OPERAND2")
+            if isinstance(node["OPERAND1"], dict) \
+            or isinstance(node["OPERAND2"], dict):
+                return node
+            return "true" \
+                    if to_bool(node["OPERAND1"]) and to_bool(node["OPERAND2"]) \
+                    else "false"
 
-		def operator_join(t):
-			basic_optimize(t, "STRING1", "STRING2")
-			if type(t["STRING1"]) is dict or type(t["STRING2"]) is dict:
-				return t
-			else:
-				return toString(t["STRING1"]) + toString(t["STRING2"])
+        def operator_or(node):
+            basic_optimize(node, "OPERAND1", "OPERAND2")
+            if isinstance(node["OPERAND1"], dict) \
+            or isinstance(node["OPERAND2"], dict):
+                return node
+            return "true" \
+                    if to_bool(node["OPERAND1"]) or to_bool(node["OPERAND2"]) \
+                    else "false"
 
-		def operator_contains(t):
-			basic_optimize(t, "STRING1", "STRING2")
-			if type(t["STRING1"]) is dict or type(t["STRING2"]) is dict:
-				return t
-			else:
-				return "true" if toString(t["STRING2"]).lower() in \
-						toString(t["STRING1"]).lower() else "false"
+        def operator_not(node):
+            basic_optimize(node, "OPERAND")
+            if isinstance(node["OPERAND1"], dict):
+                return node
+            return "false" if to_bool(node["OPERAND"]) else "true"
 
-		def procedures_definition(t):
-			basic_optimize(t, "body")
-			return t
+        def operator_length(node):
+            basic_optimize(node, "STRING")
+            if isinstance(node["STRING"], dict):
+                return node
+            return len(to_string(node["STRING"]))
 
-		def procedures_call(t):
-			basic_optimize(t, "args")
-			return t
+        def operator_join(node):
+            basic_optimize(node, "STRING1", "STRING2")
+            if isinstance(node["STRING1"], dict) \
+            or isinstance(node["STRING2"], dict):
+                return node
+            return to_string(node["STRING1"]) + to_string(node["STRING2"])
 
-		def control_if(t):
-			basic_optimize(t, "CONDITION", "true_branch")
-			if type(t["CONDITION"]) is dict:
-				return t
-			else:
-				return t["true_branch"] if toBool(t["CONDITION"]) else None
+        def operator_contains(node):
+            basic_optimize(node, "STRING1", "STRING2")
+            if isinstance(node["STRING1"], dict) \
+            or isinstance(node["STRING2"], dict):
+                return node
+            return "true" if to_string(node["STRING2"]).lower() in \
+                    to_string(node["STRING1"]).lower() else "false"
 
-		def control_if_else(t):
-			basic_optimize(t, "CONDITION", "true_branch", "false_branch")
-			if type(t["CONDITION"]) is dict:
-				return t
-			else:
-				return t["true_branch" if toBool(t["CONDITION"]) else
-						"false_branch"]
+        def procedures_definition(node):
+            basic_optimize(node, "body")
+            return node
 
-		def control_forever(t):
-			basic_optimize(t, "body")
-			return t
+        def procedures_call(node):
+            basic_optimize(node, "args")
+            return node
 
-		def control_while(t):
-			basic_optimize(t, "CONDITION", "body")
-			if type(t["CONDITION"]) is dict:
-				return t
-			else:
-				return {
-						"type": "control_forever",
-						"body": t["body"]} if toBool(t["CONDITION"]) else None
+        def control_if(node):
+            basic_optimize(node, "CONDITION", "true_branch")
+            if isinstance(node["CONDITION"], dict):
+                return node
+            return node["true_branch"] if to_bool(node["CONDITION"]) else None
 
-		def control_repeat_until(t):
-			basic_optimize(t, "CONDITION", "body")
-			if type(t["CONDITION"]) is dict:
-				return t
-			else:
-				return None if toBool(t["CONDITION"]) \
-						else {
-								"type": "control_forever",
-								"body": t["body"]}
+        def control_if_else(node):
+            basic_optimize(node, "CONDITION", "true_branch", "false_branch")
+            if isinstance(node["CONDITION"], dict):
+                return node
+            return node["true_branch" if to_bool(node["CONDITION"]
+                                                 ) else "false_branch"]
 
-		def control_repeat(t):
-			basic_optimize(t, "TIMES", "body")
-			return t
+        def control_forever(node):
+            basic_optimize(node, "body")
+            return node
 
-		def data_setvariableto(t):
-			basic_optimize(t, "value")
-			return t
+        def control_while(node):
+            basic_optimize(node, "CONDITION", "body")
+            if isinstance(node["CONDITION"], dict):
+                return node
+            return {
+                "type": "control_forever",
+                "body": node["body"]
+            } if to_bool(node["CONDITION"]) else None
 
-		def data_changevariableby(t):
-			basic_optimize(t, "value")
-			return t
+        def control_repeat_until(node):
+            basic_optimize(node, "CONDITION", "body")
+            if isinstance(node["CONDITION"], dict):
+                return node
+            return None if to_bool(node["CONDITION"]) \
+                    else {
+                        "type": "control_forever",
+                        "body": node["body"]}
 
-		def stage_def(t):
-			basic_optimize(t, "procedures")
-			return t
+        def control_repeat(node):
+            basic_optimize(node, "TIMES", "body")
+            return node
 
-		def sprite_def(t):
-			basic_optimize(t, "procedures")
-			return t
+        def data_setvariableto(node):
+            basic_optimize(node, "value")
+            return node
 
-		def program(t):
-			basic_optimize(t, "stage", "sprites")
-			return t
+        def data_changevariableby(node):
+            basic_optimize(node, "value")
+            return node
 
-		def mathop(t):
-			basic_optimize(t, "NUM")
-			if type(t["NUM"]) is dict:
-				return t
-			else:
-				return {
-						"abs": abs,
-						"floor": math.floor,
-						"ceiling": math.ceil,
-						"sqrt": math.sqrt,
-						"sin": math.sin,
-						"cos": math.cos,
-						"tan": math.tan,
-						"asin": math.asin,
-						"acos": math.acos,
-						"atan": math.atan,
-						"ln": math.log,
-						"log": math.log10,
-						"e ^": math.exp,
-						"10 ^": lambda x: 10 ** x,
-						}[t["OPERATOR"]](toNumber(t["NUM"]))
+        def stage_def(node):
+            basic_optimize(node, "procedures")
+            return node
 
-		return {
-				"operator_add": bin_numeric_op(operator.add),
-				"operator_subtract": bin_numeric_op(operator.sub),
-				"operator_multiply": bin_numeric_op(operator.mul),
-				"operator_divide": bin_numeric_op(operator.truediv),
-				"operator_mod": bin_numeric_op(operator.mod),
-				"operator_equals": bin_equality_op(operator.eq),
-				"operator_gt": bin_equality_op(operator.gt),
-				"operator_lt": bin_equality_op(operator.lt),
-				"operator_and":	operator_and,
-				"operator_or": operator_or,
-				"operator_not": operator_not,
-				"operator_length": operator_length,
-				"operator_join": operator_join,
-				"operator_contains": operator_contains,
-				"procedures_definition": procedures_definition,
-				"procedures_call": procedures_call,
-				"control_if": control_if,
-				"control_if_else": control_if_else,
-				"control_forever": control_forever,
-				"control_while": control_while,
-				"control_repeat_until": control_repeat_until,
-				"control_repeat": control_repeat,
-				"data_setvariableto": data_setvariableto,
-				"data_changevariableby": data_changevariableby,
-				"stage_def": stage_def,
-				"sprite_def": sprite_def,
-				"program": program,
-				"mathop": mathop,
-				}.get(tree["type"], lambda x: x)(tree)
-	elif type(tree) is list:
-		l = []
-		for i in tree:
-			i = optimize(i)
-			if type(i) is list:
-				l += i
-			elif i is not None:
-				l.append(i)
-		return l
-	else:
-		return tree
+        def sprite_def(node):
+            basic_optimize(node, "procedures")
+            return node
+
+        def program(node):
+            basic_optimize(node, "stage", "sprites")
+            return node
+
+        def mathop(node):
+            basic_optimize(node, "NUM")
+            if isinstance(node["NUM"], dict):
+                return node
+            return {
+                "abs": abs,
+                "floor": math.floor,
+                "ceiling": math.ceil,
+                "sqrt": math.sqrt,
+                "sin": math.sin,
+                "cos": math.cos,
+                "tan": math.tan,
+                "asin": math.asin,
+                "acos": math.acos,
+                "atan": math.atan,
+                "ln": math.log,
+                "log": math.log10,
+                "e ^": math.exp,
+                "10 ^": lambda x: 10**x,
+            }[node["OPERATOR"]](to_number(node["NUM"]))
+
+        return {
+            "operator_add": bin_numeric_op(operator.add),
+            "operator_subtract": bin_numeric_op(operator.sub),
+            "operator_multiply": bin_numeric_op(operator.mul),
+            "operator_divide": bin_numeric_op(operator.truediv),
+            "operator_mod": bin_numeric_op(operator.mod),
+            "operator_equals": bin_equality_op(operator.eq),
+            "operator_gt": bin_equality_op(operator.gt),
+            "operator_lt": bin_equality_op(operator.lt),
+            "operator_and": operator_and,
+            "operator_or": operator_or,
+            "operator_not": operator_not,
+            "operator_length": operator_length,
+            "operator_join": operator_join,
+            "operator_contains": operator_contains,
+            "procedures_definition": procedures_definition,
+            "procedures_call": procedures_call,
+            "control_if": control_if,
+            "control_if_else": control_if_else,
+            "control_forever": control_forever,
+            "control_while": control_while,
+            "control_repeat_until": control_repeat_until,
+            "control_repeat": control_repeat,
+            "data_setvariableto": data_setvariableto,
+            "data_changevariableby": data_changevariableby,
+            "stage_def": stage_def,
+            "sprite_def": sprite_def,
+            "program": program,
+            "mathop": mathop,
+        }.get(tree["type"], lambda x: x)(tree)
+    if isinstance(tree, list):
+        force_list = lambda n: n if isinstance(n, list) else [n]
+        return sum((force_list(optimize(i)) for i in tree), [])
+    return tree

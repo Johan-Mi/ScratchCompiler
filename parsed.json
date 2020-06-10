@@ -205,7 +205,7 @@
 						"tagName": "mutation",
 						"children": [],
 						"proccode": "f1",
-						"argumentids": "[]",
+						"argumentids": "{}",
 						"warp": "false"
 					}
 				},
@@ -229,7 +229,7 @@
 						"tagName": "mutation",
 						"children": [],
 						"proccode": "f2 %s",
-						"argumentids": "[\"_8\"]",
+						"argumentids": "{\"_8\": [1, \"_6\"]}",
 						"warp": "false"
 					}
 				}

@@ -1,22 +1,27 @@
+"""This module contains some functions for casting."""
 from math import isnan
 
-def toBool(v):
-	if type(v) is bool:
-		return v
-	elif type(v) is str:
-		return v.lower() not in ("", "0", "false")
-	else:
-		return bool(v)
 
-def toNumber(v):
-	if type(v) in (int, float):
-		return 0 if isnan(v) else v
-	else:
-		try:
-			n = float(v)
-			return 0 if isnan(n) else n
-		except ValueError:
-			return 0
+def to_bool(val):
+    """Convert a value to a bool."""
+    if isinstance(val, bool):
+        return val
+    if isinstance(val, str):
+        return val.lower() not in ("", "0", "false")
+    return bool(val)
 
-def toString(v):
-	return str(v)
+
+def to_number(val):
+    """Convert a value to a number."""
+    if isinstance(val, (int, float)):
+        return 0 if isnan(val) else val
+    try:
+        casted = float(val)
+        return 0 if isnan(casted) else casted
+    except ValueError:
+        return 0
+
+
+def to_string(val):
+    """Convert a value to a string."""
+    return str(val)

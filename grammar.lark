@@ -1,14 +1,14 @@
-start			: (stage_def|sprite_def|var_decl|arr_decl)*
-stage_def		: "stage" "{" (proc_def|costume_list)* "}"	-> stage_def
-sprite_def		: "sprite" ident "{" _sprite_content "}"	-> sprite_def
+start			: (stage_def|sprite_def|var_decl|arr_decl)*	-> _start
+stage_def		: "stage" "{" (proc_def|costume_list)* "}"	-> _stage_def
+sprite_def		: "sprite" ident "{" _sprite_content "}"	-> _sprite_def
 _sprite_content	: (proc_def|var_decl|arr_decl|costume_list)*
-costume_list	: "costumes" "{" [string ("," string)*] "}"	-> costume_list
-proc_def		: "func" ident "(" param_list ")" block_stmt-> proc_def
-				| "warp" "func" ident "(" param_list ")" block_stmt-> proc_def_warp
-param_list		: [ident ("," ident)*]						-> param_list
-func_call		: ident "(" arg_list ")"					-> func_call
-procedures_call	: ident "(" arg_list ")"					-> procedures_call
-arg_list		: [expr ("," expr)*]						-> arg_list
+costume_list	: "costumes" "{" [string ("," string)*] "}"	-> _costume_list
+proc_def		: "func" ident "(" param_list ")" block_stmt-> _proc_def
+				| "warp" "func" ident "(" param_list ")" block_stmt-> _proc_def_warp
+param_list		: [ident ("," ident)*]						-> _param_list
+func_call		: ident "(" arg_list ")"					-> _func_call
+procedures_call	: ident "(" arg_list ")"					-> _procedures_call
+arg_list		: [expr ("," expr)*]						-> _arg_list
 ?stmt			: procedures_call ";"
 				| if_stmt
 				| until_loop
@@ -16,53 +16,53 @@ arg_list		: [expr ("," expr)*]						-> arg_list
 				| repeat_loop
 				| forever_loop
 				| var_assignment ";"
-stmts			: stmt*										-> stmts
-block_stmt		: "{" stmts "}"								-> block_stmt
-var_decl		: "var" ident ";"							-> var_decl
-arr_decl		: "arr" ident ";"							-> arr_decl
-if_stmt			: "if" expr block_stmt						-> if_stmt
-				| "if" expr block_stmt "else" block_stmt	-> if_else_stmt
-				| "if" expr block_stmt "else" if_stmt		-> if_elif_stmt
-until_loop		: "until" expr block_stmt					-> until_loop
-while_loop		: "while" expr block_stmt					-> while_loop
-repeat_loop		: "repeat" expr block_stmt					-> repeat_loop
-forever_loop	: "forever" block_stmt						-> forever_loop
-var_assignment	: ident "=" expr							-> var_eq
-				| ident "+=" expr							-> var_peq
-				| ident "-=" expr							-> var_meq
-				| ident "*=" expr							-> var_teq
-				| ident "/=" expr							-> var_deq
+stmts			: stmt*										-> _stmts
+block_stmt		: "{" stmts "}"								-> _block_stmt
+var_decl		: "var" ident ";"							-> _var_decl
+arr_decl		: "arr" ident ";"							-> _arr_decl
+if_stmt			: "if" expr block_stmt						-> _if_stmt
+				| "if" expr block_stmt "else" block_stmt	-> _if_else_stmt
+				| "if" expr block_stmt "else" if_stmt		-> _if_elif_stmt
+until_loop		: "until" expr block_stmt					-> _until_loop
+while_loop		: "while" expr block_stmt					-> _while_loop
+repeat_loop		: "repeat" expr block_stmt					-> _repeat_loop
+forever_loop	: "forever" block_stmt						-> _forever_loop
+var_assignment	: ident "=" expr							-> _var_eq
+				| ident "+=" expr							-> _var_peq
+				| ident "-=" expr							-> _var_meq
+				| ident "*=" expr							-> _var_teq
+				| ident "/=" expr							-> _var_deq
 ?expr			: logical_or
-?logical_or		: logical_or "||" logical_and				-> logical_or
+?logical_or		: logical_or "||" logical_and				-> _logical_or
 				| logical_and
-?logical_and	: logical_and "&&" comparision				-> logical_and
+?logical_and	: logical_and "&&" comparision				-> _logical_and
 				| comparision
-?comparision	: comparision ">" addition					-> greater_than
-				| comparision "<" addition					-> less_than
-				| comparision "==" addition					-> equal_to
+?comparision	: comparision ">" addition					-> _greater_than
+				| comparision "<" addition					-> _less_than
+				| comparision "==" addition					-> _equal_to
 				| addition
-?addition		: addition "+" multiplication				-> addition
-				| addition "-" multiplication				-> subtraction
+?addition		: addition "+" multiplication				-> _addition
+				| addition "-" multiplication				-> _subtraction
 				| multiplication
-?multiplication	: multiplication "*" logical_not			-> multiplication
-				| multiplication "/" logical_not			-> division
-				| multiplication "%" logical_not			-> modulo
+?multiplication	: multiplication "*" logical_not			-> _multiplication
+				| multiplication "/" logical_not			-> _division
+				| multiplication "%" logical_not			-> _modulo
 				| logical_not
-?logical_not	: "!" logical_not							-> logical_not
+?logical_not	: "!" logical_not							-> _logical_not
 				| atom
-?atom			: NUMBER									-> number
+?atom			: NUMBER									-> _number
 				| string
 				| ident
 				| func_call
 				| "(" expr ")"
-				| "-" expr									-> negate
-				| true
-				| false
+				| "-" expr									-> _negate
+				| TRUE										-> _true
+				| FALSE										-> _false
 
-true			: "true"									-> true
-false			: "false"									-> false
-ident			: CNAME										-> ident
-string			: ESCAPED_STRING							-> string
+TRUE			: "true"
+FALSE			: "false"
+ident			: CNAME										-> _ident
+string			: ESCAPED_STRING							-> _string
 
 %import common.WS
 %import common.NUMBER
