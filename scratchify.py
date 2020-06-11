@@ -1,18 +1,8 @@
 """This module contains the scratchify function, which converts an AST into a
 valid object for the project.json file in a scratch project."""
+from itertools import count
 
-
-class IdCounter:
-    """Generates IDs for blocks, variables, etc."""
-    curr_id = 0
-
-    def __call__(self):
-        """Returns the next ID."""
-        self.curr_id += 1
-        return f"_{self.curr_id}"
-
-
-next_id = IdCounter()
+id_maker = (f"_{i}" for i in count())
 
 
 def resolve_var(name: str, env) -> str:
@@ -52,6 +42,8 @@ def resolve_proc(name: str, env) -> str:
 
 
 def scratchify(tree, env=None) -> list:
+    """Converts an AST into a valid object for the project.json file in a
+    scratch project."""
     if isinstance(tree, dict):
 
         def assign_parent(parent_id: str, *args):
@@ -73,7 +65,7 @@ def scratchify(tree, env=None) -> list:
             return sum((scratchify(i, env) for i in node["procedures"]), [])
 
         def procedures_definition(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
 
             params = [scratchify(i, env)[0] for i in node["params"]]
 
@@ -82,7 +74,7 @@ def scratchify(tree, env=None) -> list:
                 "next": None,
                 "parent": None,
                 "inputs": {
-                    "custom_block": [1, next_id()]
+                    "custom_block": [1, next(id_maker)]
                 },
                 "fields": {},
                 "shadow": False,
@@ -95,7 +87,7 @@ def scratchify(tree, env=None) -> list:
                 "opcode": "procedures_prototype",
                 "next": None,
                 "parent": definition[0],
-                "inputs": {next_id(): [1, i[0]]
+                "inputs": {next(id_maker): [1, i[0]]
                            for i in params},
                 "fields": {},
                 "shadow": True,
@@ -137,7 +129,7 @@ def scratchify(tree, env=None) -> list:
             return sum(body, params)
 
         def param(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
             return [(node["id"], {
                 "opcode": "argument_reporter_string_number",
                 "next": None,
@@ -151,7 +143,7 @@ def scratchify(tree, env=None) -> list:
             })]
 
         def motion_movesteps(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
             steps = scratchify(node["STEPS"], env)
             assign_parent(node["id"], steps)
             return [(node["id"], {
@@ -167,7 +159,7 @@ def scratchify(tree, env=None) -> list:
             })] + steps
 
         def motion_gotoxy(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
             x_coord = scratchify(node["X"], env)
             y_coord = scratchify(node["Y"], env)
             assign_parent(node["id"], x_coord, y_coord)
@@ -185,7 +177,7 @@ def scratchify(tree, env=None) -> list:
             })] + x_coord + y_coord
 
         def motion_turnright(node: dict) -> dict:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
             degrees = scratchify(node["DEGREES"], env)
             assign_parent(node["id"], degrees)
             return [(node["id"], {
@@ -201,7 +193,7 @@ def scratchify(tree, env=None) -> list:
             })] + degrees
 
         def motion_turnleft(node: dict) -> dict:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
             degrees = scratchify(node["DEGREES"], env)
             assign_parent(node["id"], degrees)
             return [(node["id"], {
@@ -217,7 +209,7 @@ def scratchify(tree, env=None) -> list:
             })] + degrees
 
         def motion_ifonedgebounce(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
             return [(node["id"], {
                 "opcode": "motion_ifonedgebounce",
                 "next": None,
@@ -229,7 +221,7 @@ def scratchify(tree, env=None) -> list:
             })]
 
         def motion_pointindirection(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
             direction = scratchify(node["DIRECTION"], env)
             assign_parent(node["id"], direction)
             return [(node["id"], {
@@ -245,7 +237,7 @@ def scratchify(tree, env=None) -> list:
             })] + direction
 
         def motion_glidesecstoxy(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
             x_coord = scratchify(node["X"], env)
             y_coord = scratchify(node["Y"], env)
             secs = scratchify(node["SECS"], env)
@@ -265,7 +257,7 @@ def scratchify(tree, env=None) -> list:
             })] + x_coord + y_coord + secs
 
         def control_if(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
 
             condition = scratchify(node["CONDITION"], env)
             assign_parent(node["id"], condition)
@@ -290,7 +282,7 @@ def scratchify(tree, env=None) -> list:
             return sum(substack, [if_stmt] + condition)
 
         def control_if_else(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
 
             condition = scratchify(node["CONDITION"], env)
             assign_parent(node["id"], condition)
@@ -318,7 +310,7 @@ def scratchify(tree, env=None) -> list:
             return sum(substack + substack2, [if_stmt] + condition)
 
         def control_repeat(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
 
             times = scratchify(node["TIMES"], env)
             assign_parent(node["id"], times)
@@ -343,7 +335,7 @@ def scratchify(tree, env=None) -> list:
             return sum(substack, [loop] + times)
 
         def control_forever(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
 
             substack = [scratchify(i, env) for i in node["body"]]
 
@@ -364,7 +356,7 @@ def scratchify(tree, env=None) -> list:
             return sum(substack, [loop])
 
         def control_while(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
 
             condition = scratchify(node["CONDITION"], env)
             assign_parent(node["id"], condition)
@@ -389,7 +381,7 @@ def scratchify(tree, env=None) -> list:
             return sum(substack, [loop] + condition)
 
         def control_repeat_until(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
 
             condition = scratchify(node["CONDITION"], env)
             assign_parent(node["id"], condition)
@@ -415,7 +407,7 @@ def scratchify(tree, env=None) -> list:
 
         def bin_numeric_op(opcode: str):
             def generated_func(node):
-                node["id"] = next_id()
+                node["id"] = next(id_maker)
                 num1 = scratchify(node["NUM1"], env)
                 num2 = scratchify(node["NUM2"], env)
                 assign_parent(node["id"], num1, num2)
@@ -436,7 +428,7 @@ def scratchify(tree, env=None) -> list:
 
         def binary_logic_operator(opcode: str):
             def generated_func(node):
-                node["id"] = next_id()
+                node["id"] = next(id_maker)
                 operand1 = scratchify(node["OPERAND1"], env)
                 operand2 = scratchify(node["OPERAND2"], env)
                 assign_parent(node["id"], operand1, operand2)
@@ -456,7 +448,7 @@ def scratchify(tree, env=None) -> list:
             return generated_func
 
         def operator_not(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
             operand = scratchify(node["OPERAND"], env)
             assign_parent(node["id"], operand)
             return [(node["id"], {
@@ -472,7 +464,7 @@ def scratchify(tree, env=None) -> list:
             })] + operand
 
         def operator_random(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
             low = scratchify(node["FROM"], env)
             high = scratchify(node["TO"], env)
             assign_parent(node["id"], low, high)
@@ -490,7 +482,7 @@ def scratchify(tree, env=None) -> list:
             })] + low + high
 
         def data_setvariableto(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
             var_id = resolve_var(node["name"], env)
             value = scratchify(node["value"], env)
             return [(node["id"], {
@@ -508,7 +500,7 @@ def scratchify(tree, env=None) -> list:
             })] + value
 
         def data_changevariableby(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
             var_or_arr, var_id = resolve_var_or_arr(node["name"], env)
             value = scratchify(node["value"], env)
             if var_or_arr == "var":
@@ -540,7 +532,7 @@ def scratchify(tree, env=None) -> list:
             })] + value
 
         def procedures_call(node: dict) -> list:
-            node["id"] = next_id()
+            node["id"] = next(id_maker)
 
             proc = resolve_proc(node["name"], env)
             args = [scratchify(i, env) for i in node["args"]]
@@ -570,9 +562,9 @@ def scratchify(tree, env=None) -> list:
 
         def program(node: dict) -> list:
             for i in node["stage"]["variables"]:
-                i["id"] = next_id()
+                i["id"] = next(id_maker)
             for i in node["stage"]["lists"]:
-                i["id"] = next_id()
+                i["id"] = next(id_maker)
 
             stage = {
                 "isStage":
@@ -612,9 +604,9 @@ def scratchify(tree, env=None) -> list:
             targets = [stage]
             for i, spr in enumerate(node["sprites"]):
                 for j in spr["variables"]:
-                    j["id"] = next_id()
+                    j["id"] = next(id_maker)
                 for j in spr["lists"]:
-                    j["id"] = next_id()
+                    j["id"] = next(id_maker)
 
                 targets.append({
                     "isStage":

@@ -5,7 +5,7 @@
 			"name": "Stage",
 			"variables": {},
 			"lists": {
-				"_1": [
+				"_0": [
 					"fib",
 					[]
 				]
@@ -38,14 +38,14 @@
 			"lists": {},
 			"broadcasts": {},
 			"blocks": {
-				"_2": {
+				"_1": {
 					"opcode": "procedures_definition",
-					"next": "_4",
+					"next": "_3",
 					"parent": null,
 					"inputs": {
 						"custom_block": [
 							1,
-							"_3"
+							"_2"
 						]
 					},
 					"fields": {},
@@ -54,10 +54,10 @@
 					"x": 0,
 					"y": 0
 				},
-				"_3": {
+				"_2": {
 					"opcode": "procedures_prototype",
 					"next": null,
-					"parent": "_2",
+					"parent": "_1",
 					"inputs": {},
 					"fields": {},
 					"shadow": true,
@@ -72,10 +72,10 @@
 						"warp": "false"
 					}
 				},
-				"_4": {
+				"_3": {
 					"opcode": "motion_movesteps",
 					"next": null,
-					"parent": "_2",
+					"parent": "_1",
 					"inputs": {
 						"STEPS": [
 							1,
@@ -89,10 +89,10 @@
 					"shadow": false,
 					"topLevel": false
 				},
-				"_6": {
+				"_5": {
 					"opcode": "argument_reporter_string_number",
 					"next": null,
-					"parent": "_7",
+					"parent": "_6",
 					"inputs": {},
 					"fields": {
 						"VALUE": [
@@ -103,14 +103,14 @@
 					"shadow": false,
 					"topLevel": false
 				},
-				"_5": {
+				"_4": {
 					"opcode": "procedures_definition",
-					"next": "_9",
+					"next": "_8",
 					"parent": null,
 					"inputs": {
 						"custom_block": [
 							1,
-							"_7"
+							"_6"
 						]
 					},
 					"fields": {},
@@ -119,14 +119,14 @@
 					"x": 0,
 					"y": 0
 				},
-				"_7": {
+				"_6": {
 					"opcode": "procedures_prototype",
 					"next": null,
-					"parent": "_5",
+					"parent": "_4",
 					"inputs": {
-						"_8": [
+						"_7": [
 							1,
-							"_6"
+							"_5"
 						]
 					},
 					"fields": {},
@@ -136,16 +136,16 @@
 						"tagName": "mutation",
 						"children": [],
 						"proccode": "f2 %s",
-						"argumentids": "[\"_8\"]",
+						"argumentids": "[\"_7\"]",
 						"argumentnames": "[\"a\"]",
 						"argumentdefaults": "[\"\"]",
 						"warp": "false"
 					}
 				},
-				"_9": {
+				"_8": {
 					"opcode": "motion_turnright",
 					"next": null,
-					"parent": "_5",
+					"parent": "_4",
 					"inputs": {
 						"DEGREES": [
 							1,
@@ -159,14 +159,14 @@
 					"shadow": false,
 					"topLevel": false
 				},
-				"_10": {
+				"_9": {
 					"opcode": "procedures_definition",
-					"next": "_12",
+					"next": "_11",
 					"parent": null,
 					"inputs": {
 						"custom_block": [
 							1,
-							"_11"
+							"_10"
 						]
 					},
 					"fields": {},
@@ -175,10 +175,10 @@
 					"x": 0,
 					"y": 0
 				},
-				"_11": {
+				"_10": {
 					"opcode": "procedures_prototype",
 					"next": null,
-					"parent": "_10",
+					"parent": "_9",
 					"inputs": {},
 					"fields": {},
 					"shadow": true,
@@ -193,10 +193,10 @@
 						"warp": "false"
 					}
 				},
-				"_12": {
+				"_11": {
 					"opcode": "procedures_call",
-					"next": "_13",
-					"parent": "_10",
+					"next": "_12",
+					"parent": "_9",
 					"inputs": {},
 					"fields": {},
 					"shadow": false,
@@ -209,12 +209,12 @@
 						"warp": "false"
 					}
 				},
-				"_13": {
+				"_12": {
 					"opcode": "procedures_call",
 					"next": null,
-					"parent": "_12",
+					"parent": "_11",
 					"inputs": {
-						"_8": [
+						"_7": [
 							1,
 							[
 								4,
@@ -229,7 +229,7 @@
 						"tagName": "mutation",
 						"children": [],
 						"proccode": "f2 %s",
-						"argumentids": "{\"_8\": [1, \"_6\"]}",
+						"argumentids": "{\"_7\": [1, \"_5\"]}",
 						"warp": "false"
 					}
 				}
