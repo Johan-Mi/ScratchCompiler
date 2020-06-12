@@ -10,7 +10,7 @@ def expect_args(name, count, provided):
                 {provided} were provided")
 
 
-class GrammarTransformer(Transformer):
+class GrammarTransformer(Transformer): # pylint: disable=too-few-public-methods
     """This class is used as a transformer when parsing source code that will be
     compiled to scratch."""
     @staticmethod
