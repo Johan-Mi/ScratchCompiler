@@ -120,7 +120,7 @@ def _procedures_definition(node: dict, env) -> list:
     return sum(body, params)
 
 
-def _param(node: dict) -> list:
+def _param(node: dict, _) -> list:
     node["id"] = next(id_maker)
     return [(node["id"], {
         "opcode": "argument_reporter_string_number",
@@ -205,7 +205,7 @@ def _motion_turnleft(node: dict, env) -> dict:
     })] + degrees
 
 
-def _motion_ifonedgebounce(node: dict) -> list:
+def _motion_ifonedgebounce(node: dict, _) -> list:
     node["id"] = next(id_maker)
     return [(node["id"], {
         "opcode": "motion_ifonedgebounce",
@@ -678,74 +678,40 @@ def scratchify(tree, env=None) -> list:
     scratch project."""
     if isinstance(tree, dict):
         return {
-            "operator_add":
-            _bin_numeric_op("operator_add"),
-            "operator_subtract":
-            _bin_numeric_op("operator_subtract"),
-            "operator_multiply":
-            _bin_numeric_op("operator_multiply"),
-            "operator_divide":
-            _bin_numeric_op("operator_divide"),
-            "operator_mod":
-            _bin_numeric_op("operator_mod"),
-            "operator_equals":
-            _binary_logic_operator("operator_equals"),
-            "operator_gt":
-            _binary_logic_operator("operator_gt"),
-            "operator_lt":
-            _binary_logic_operator("operator_lt"),
-            "operator_and":
-            _binary_logic_operator("operator_and"),
-            "operator_or":
-            _binary_logic_operator("operator_or"),
-            "operator_not":
-            _operator_not,
-            "operator_random":
-            _operator_random,
-            "procedures_definition":
-            _procedures_definition,
-            "procedures_call":
-            _procedures_call,
-            "control_if":
-            _control_if,
-            "control_if_else":
-            _control_if_else,
-            "control_forever":
-            _control_forever,
-            "control_while":
-            _control_while,
-            "control_repeat_until":
-            _control_repeat_until,
-            "control_repeat":
-            _control_repeat,
-            "data_setvariableto":
-            _data_setvariableto,
-            "data_changevariableby":
-            _data_changevariableby,
-            "ident":
-            _ident,
-            "stage_def":
-            _stage_def,
-            "sprite_def":
-            _sprite_def,
-            "program":
-            _program,
-            "param":
-            lambda node, env: _param(node),
-            "motion_movesteps":
-            _motion_movesteps,
-            "motion_gotoxy":
-            _motion_gotoxy,
-            "motion_turnright":
-            _motion_turnright,
-            "motion_turnleft":
-            _motion_turnleft,
-            "motion_pointindirection":
-            _motion_pointindirection,
-            "motion_glidesecstoxy":
-            _motion_glidesecstoxy,
-            "motion_ifonedgebounce":
-            lambda node, env: _motion_ifonedgebounce(node),
+            "operator_add": _bin_numeric_op("operator_add"),
+            "operator_subtract": _bin_numeric_op("operator_subtract"),
+            "operator_multiply": _bin_numeric_op("operator_multiply"),
+            "operator_divide": _bin_numeric_op("operator_divide"),
+            "operator_mod": _bin_numeric_op("operator_mod"),
+            "operator_equals": _binary_logic_operator("operator_equals"),
+            "operator_gt": _binary_logic_operator("operator_gt"),
+            "operator_lt": _binary_logic_operator("operator_lt"),
+            "operator_and": _binary_logic_operator("operator_and"),
+            "operator_or": _binary_logic_operator("operator_or"),
+            "operator_not": _operator_not,
+            "operator_random": _operator_random,
+            "procedures_definition": _procedures_definition,
+            "procedures_call": _procedures_call,
+            "control_if": _control_if,
+            "control_if_else": _control_if_else,
+            "control_forever": _control_forever,
+            "control_while": _control_while,
+            "control_repeat_until": _control_repeat_until,
+            "control_repeat": _control_repeat,
+            "data_setvariableto": _data_setvariableto,
+            "data_changevariableby": _data_changevariableby,
+            "ident": _ident,
+            "stage_def": _stage_def,
+            "sprite_def": _sprite_def,
+            "program": _program,
+            "param": _param,
+            "motion_movesteps": _motion_movesteps,
+            "motion_gotoxy": _motion_gotoxy,
+            "motion_turnright": _motion_turnright,
+            "motion_turnleft": _motion_turnleft,
+            "motion_pointindirection": _motion_pointindirection,
+            "motion_glidesecstoxy": _motion_glidesecstoxy,
+            "motion_ifonedgebounce": _motion_ifonedgebounce,
         }.get(tree["type"], lambda x, y: [])(tree, env)
     if isinstance(tree, (int, float)):
         return [[[4, tree]]]
