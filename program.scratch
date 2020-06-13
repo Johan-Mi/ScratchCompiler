@@ -1,22 +1,12 @@
-arr fib;
+arr a;
+var b;
 
 stage {
-
-}
-
-sprite sprite1 {
-	func f1() {
-        if true {
-            moveSteps(20);
-        }
-	}
-
-	func f2(a) {
-		turnRight(90);
-	}
-
-	func onFlagClicked() {
-		f1();
-		f2(10);
-	}
+    func onFlagClicked() {
+        a += 10;
+        a += 20;
+        a += 30;
+        b = 2;
+        b = a[b];
+    }
 }

@@ -20,6 +20,7 @@ stmts			: stmt*										-> _stmts
 block_stmt		: "{" stmts "}"								-> _block_stmt
 var_decl		: "var" ident ";"							-> _var_decl
 arr_decl		: "arr" ident ";"							-> _arr_decl
+arr_index       : ident "[" expr "]"                        -> _arr_index
 if_stmt			: "if" expr block_stmt						-> _if_stmt
 				| "if" expr block_stmt "else" block_stmt	-> _if_else_stmt
 				| "if" expr block_stmt "else" if_stmt		-> _if_elif_stmt
@@ -54,6 +55,7 @@ var_assignment	: ident "=" expr							-> _var_eq
 				| string
 				| ident
 				| func_call
+                | arr_index
 				| "(" expr ")"
 				| "-" expr									-> _negate
 				| TRUE										-> _true

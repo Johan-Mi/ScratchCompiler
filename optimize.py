@@ -151,6 +151,16 @@ def _data_changevariableby(node):
     return node
 
 
+def _data_addtolist(node):
+    _basic_optimize(node, "value")
+    return node
+
+
+def _data_itemoflist(node):
+    _basic_optimize(node, "INDEX")
+    return node
+
+
 def _stage_def(node):
     _basic_optimize(node, "procedures")
     return node
@@ -216,6 +226,8 @@ def optimize(tree):
             "control_repeat": _control_repeat,
             "data_setvariableto": _data_setvariableto,
             "data_changevariableby": _data_changevariableby,
+            "data_addtolist": _data_addtolist,
+            "data_itemoflist": _data_itemoflist,
             "stage_def": _stage_def,
             "sprite_def": _sprite_def,
             "program": _program,

@@ -10,7 +10,7 @@ def expect_args(name, count, provided):
                 {provided} were provided")
 
 
-class GrammarTransformer(Transformer): # pylint: disable=too-few-public-methods
+class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
     """This class is used as a transformer when parsing source code that will be
     compiled to scratch."""
     @staticmethod
@@ -335,6 +335,14 @@ class GrammarTransformer(Transformer): # pylint: disable=too-few-public-methods
     @staticmethod
     def _arr_decl(args):
         return {"type": "arr_decl", "name": args[0]["name"]}
+
+    @staticmethod
+    def _arr_index(args):
+        return {
+            "type": "data_itemoflist",
+            "name": args[0]["name"],
+            "INDEX": args[1]
+        }
 
     @staticmethod
     def _if_stmt(args):

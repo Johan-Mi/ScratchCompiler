@@ -14,6 +14,14 @@ def resolve_var(name: str, env) -> str:
     raise NameError(f"Identifier '{name}' is not defined")
 
 
+def resolve_arr(name: str, env) -> str:
+    """Finds the list with specified name in env."""
+    for arr in itertools.chain(env["sprite"]["lists"], env["stage"]["lists"]):
+        if arr["name"] == name:
+            return arr["id"]
+    raise NameError(f"Identifier '{name}' is not defined")
+
+
 def resolve_var_or_arr(name: str, env) -> str:
     """Finds the variable or list with specified name in env."""
     for owner in env["sprite"], env["stage"]:
@@ -543,6 +551,25 @@ def _data_changevariableby(node: dict, env) -> list:
     })] + value
 
 
+def _data_itemoflist(node: dict, env) -> list:
+    node["id"] = next(id_maker)
+    arr_id = resolve_arr(node["name"], env)
+    index = scratchify(node["INDEX"], env)
+    return [(node["id"], {
+        "opcode": "data_itemoflist",
+        "next": None,
+        "parent": None,
+        "inputs": {
+            "INDEX": [1, index[0][0]]
+        },
+        "fields": {
+            "LIST": [node["name"], arr_id]
+        },
+        "shadow": False,
+        "topLevel": False
+    })] + index
+
+
 def _procedures_call(node: dict, env) -> list:
     node["id"] = next(id_maker)
 
@@ -578,6 +605,11 @@ def _program(node: dict, env) -> list:
         var["id"] = next(id_maker)
     for arr in node["stage"]["lists"]:
         arr["id"] = next(id_maker)
+    for spr in node["sprites"]:
+        for var in spr["variables"]:
+            var["id"] = next(id_maker)
+        for arr in spr["lists"]:
+            arr["id"] = next(id_maker)
 
     stage = {
         "isStage":
@@ -614,53 +646,47 @@ def _program(node: dict, env) -> list:
         "off"
     }
 
-    targets = [stage]
-    for i, spr in enumerate(node["sprites"]):
-        for var in spr["variables"]:
-            var["id"] = next(id_maker)
-        for arr in spr["lists"]:
-            arr["id"] = next(id_maker)
-
-        targets.append({
-            "isStage":
-            False,
-            "name":
-            spr["name"],
-            "variables": {j["id"]: [j["name"], 0]
-                          for j in spr["variables"]},
-            "lists": {j["id"]: [j["name"], []]
-                      for j in spr["lists"]},
-            "broadcasts": {},
-            "blocks":
-            dict(j for j in scratchify(
-                spr, env or {
-                    "stage": node["stage"],
-                    "sprite": spr
-                }) if isinstance(j, tuple)),
-            "comments": {},
-            "currentCostume":
-            0,
-            "costumes": [],
-            "sounds": [],
-            "volume":
-            0,
-            "layerOrder":
-            i + 1,
-            "visible":
-            True,
-            "x":
-            0,
-            "y":
-            0,
-            "size":
-            100,
-            "direction":
-            90,
-            "draggable":
-            False,
-            "rotationStyle":
-            "all around"
-        })
+    targets = [stage] + [{
+        "isStage":
+        False,
+        "name":
+        spr["name"],
+        "variables": {j["id"]: [j["name"], 0]
+                      for j in spr["variables"]},
+        "lists": {j["id"]: [j["name"], []]
+                  for j in spr["lists"]},
+        "broadcasts": {},
+        "blocks":
+        dict(
+            j
+            for j in scratchify(spr, env or {
+                "stage": node["stage"],
+                "sprite": spr
+            }) if isinstance(j, tuple)),
+        "comments": {},
+        "currentCostume":
+        0,
+        "costumes": [],
+        "sounds": [],
+        "volume":
+        0,
+        "layerOrder":
+        i,
+        "visible":
+        True,
+        "x":
+        0,
+        "y":
+        0,
+        "size":
+        100,
+        "direction":
+        90,
+        "draggable":
+        False,
+        "rotationStyle":
+        "all around"
+    } for i, spr in enumerate(node["sprites"], 1)]
 
     return {
         "targets": targets,
@@ -700,6 +726,7 @@ def scratchify(tree, env=None) -> list:
             "control_repeat": _control_repeat,
             "data_setvariableto": _data_setvariableto,
             "data_changevariableby": _data_changevariableby,
+            "data_itemoflist": _data_itemoflist,
             "ident": _ident,
             "stage_def": _stage_def,
             "sprite_def": _sprite_def,
