@@ -94,7 +94,7 @@ class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
         return {"type": "block_stmt", "body": args[0]}
 
     @staticmethod
-    def _proc_def(args):
+    def _proc_def_norm(args):
         return {
             "type": "procedures_definition",
             "name": args[0]["name"],
@@ -107,10 +107,10 @@ class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
     def _proc_def_warp(args):
         return {
             "type": "procedures_definition",
-            "name": args[0]["name"],
-            "params": args[1]["params"],
+            "name": args["name"],
+            "params": args["params"],
             "warp": "true",
-            "body": args[2]["body"]["stmts"]
+            "body": args["body"]
         }
 
     @staticmethod
@@ -232,6 +232,26 @@ class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
             expect_args("ifOnEdgeBounce", 0, len(node["args"]))
             return {"type": "motion_ifonedgebounce"}
 
+        def wait(node):
+            expect_args("wait", 1, len(node["args"]))
+            return {"type": "control_wait", "DURATION": node["args"][0]}
+
+        def wait_until(node):
+            expect_args("waitUntil", 1, len(node["args"]))
+            return {"type": "control_wait_until", "CONDITION": node["args"][0]}
+
+        def say(node):
+            expect_args("say", 1, len(node["args"]))
+            return {"type": "looks_say", "MESSAGE": node["args"][0]}
+
+        def say_seconds(node):
+            expect_args("saySeconds", 2, len(node["args"]))
+            return {
+                "type": "looks_sayforsecs",
+                "MESSAGE": node["args"][0],
+                "SECS": node["args"][1]
+            }
+
         call = {
             "type": "procedures_call",
             "name": args[0]["name"],
@@ -246,6 +266,10 @@ class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
             "pointInDirection": point_in_direction,
             "glideToXY": glide_secs_to_xy,
             "ifOnEdgeBounce": if_on_edge_bounce,
+            "wait": wait,
+            "waitUntil": wait_until,
+            "say": say,
+            "saySeconds": say_seconds,
         }.get(call["name"], lambda x: x)(call)
 
     @staticmethod

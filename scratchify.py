@@ -509,6 +509,7 @@ def _data_setvariableto(node: dict, env) -> list:
     node["id"] = next(id_maker)
     var_id = resolve_var(node["name"], env)
     value = scratchify(node["value"], env)
+    _assign_parent(node["id"], value)
     return [(node["id"], {
         "opcode": "data_setvariableto",
         "next": None,
@@ -528,6 +529,7 @@ def _data_changevariableby(node: dict, env) -> list:
     node["id"] = next(id_maker)
     var_or_arr, var_id = resolve_var_or_arr(node["name"], env)
     value = scratchify(node["value"], env)
+    _assign_parent(node["id"], value)
     if var_or_arr == "var":
         return [(node["id"], {
             "opcode": "data_changevariableby",
@@ -561,6 +563,7 @@ def _data_itemoflist(node: dict, env) -> list:
     node["id"] = next(id_maker)
     arr_id = resolve_arr(node["name"], env)
     index = scratchify(node["INDEX"], env)
+    _assign_parent(node["id"], index)
     return [(node["id"], {
         "opcode": "data_itemoflist",
         "next": None,
@@ -581,6 +584,7 @@ def _procedures_call(node: dict, env) -> list:
 
     proc = resolve_proc(node["name"], env)
     args = [scratchify(i, env) for i in node["args"]]
+    _assign_parent(node["id"], *args)
     call = [(node["id"], {
         "opcode": "procedures_call",
         "next": None,
@@ -604,6 +608,76 @@ def _procedures_call(node: dict, env) -> list:
 def _ident(node: dict, env) -> list:
     var_or_arr, var_id = resolve_var_or_arr(node["name"], env)
     return [[[12 if var_or_arr == "var" else 13, node["name"], var_id]]]
+
+
+def _control_wait(node: dict, env) -> list:
+    node["id"] = next(id_maker)
+    duration = scratchify(node["DURATION"], env)
+    _assign_parent(node["id"], duration)
+    return [(node["id"], {
+        "opcode": "control_wait",
+        "next": None,
+        "parent": None,
+        "inputs": {
+            "DURATION": _number_input(duration)
+        },
+        "fields": {},
+        "shadow": False,
+        "topLevel": False
+    })] + duration
+
+
+def _control_wait_until(node: dict, env) -> list:
+    node["id"] = next(id_maker)
+    condition = scratchify(node["CONDITION"], env)
+    _assign_parent(node["id"], condition)
+    return [(node["id"], {
+        "opcode": "control_wait_until",
+        "next": None,
+        "parent": None,
+        "inputs": {
+            "CONDITION": _number_input(condition)
+        },
+        "fields": {},
+        "shadow": False,
+        "topLevel": False
+    })] + condition
+
+
+def _looks_say(node: dict, env) -> list:
+    node["id"] = next(id_maker)
+    message = scratchify(node["MESSAGE"], env)
+    _assign_parent(node["id"], message)
+    return [(node["id"], {
+        "opcode": "looks_say",
+        "next": None,
+        "parent": None,
+        "inputs": {
+            "MESSAGE": _number_input(message)
+        },
+        "fields": {},
+        "shadow": False,
+        "topLevel": False
+    })] + message
+
+
+def _looks_sayforsecs(node: dict, env) -> list:
+    node["id"] = next(id_maker)
+    message = scratchify(node["MESSAGE"], env)
+    secs = scratchify(node["SECS"], env)
+    _assign_parent(node["id"], message, secs)
+    return [(node["id"], {
+        "opcode": "looks_sayforsecs",
+        "next": None,
+        "parent": None,
+        "inputs": {
+            "MESSAGE": _number_input(message),
+            "SECS": _number_input(secs)
+        },
+        "fields": {},
+        "shadow": False,
+        "topLevel": False
+    })] + message + secs
 
 
 def _program(node: dict, env) -> list:
@@ -730,6 +804,8 @@ def scratchify(tree, env=None) -> list:
             "control_while": _control_while,
             "control_repeat_until": _control_repeat_until,
             "control_repeat": _control_repeat,
+            "control_wait": _control_wait,
+            "control_wait_until": _control_wait_until,
             "data_setvariableto": _data_setvariableto,
             "data_changevariableby": _data_changevariableby,
             "data_itemoflist": _data_itemoflist,
@@ -745,6 +821,8 @@ def scratchify(tree, env=None) -> list:
             "motion_pointindirection": _motion_pointindirection,
             "motion_glidesecstoxy": _motion_glidesecstoxy,
             "motion_ifonedgebounce": _motion_ifonedgebounce,
+            "looks_say": _looks_say,
+            "looks_sayforsecs": _looks_sayforsecs,
         }.get(tree["type"], lambda x, y: [])(tree, env)
     if isinstance(tree, (int, float)):
         return [[[4, tree]]]

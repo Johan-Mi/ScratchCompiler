@@ -198,6 +198,26 @@ def _mathop(node):
     }[node["OPERATOR"]](to_number(node["NUM"]))
 
 
+def _control_wait(node):
+    _basic_optimize(node, "DURATION")
+    return node
+
+
+def _control_wait_until(node):
+    _basic_optimize(node, "CONDITION")
+    return node
+
+
+def _looks_say(node):
+    _basic_optimize(node, "MESSAGE")
+    return node
+
+
+def _looks_sayforsecs(node):
+    _basic_optimize(node, "MESSAGE", "SECS")
+    return node
+
+
 def optimize(tree):
     """Returns an optimized version of an AST."""
     if isinstance(tree, dict):
@@ -224,6 +244,8 @@ def optimize(tree):
             "control_while": _control_while,
             "control_repeat_until": _control_repeat_until,
             "control_repeat": _control_repeat,
+            "control_wait": _control_wait,
+            "control_wait_until": _control_wait_until,
             "data_setvariableto": _data_setvariableto,
             "data_changevariableby": _data_changevariableby,
             "data_addtolist": _data_addtolist,
@@ -232,6 +254,8 @@ def optimize(tree):
             "sprite_def": _sprite_def,
             "program": _program,
             "mathop": _mathop,
+            "looks_say": _looks_say,
+            "looks_sayforsecs": _looks_sayforsecs,
         }.get(tree["type"], lambda x: x)(tree)
     if isinstance(tree, list):
         force_list = lambda n: n if isinstance(n, list) else [n]

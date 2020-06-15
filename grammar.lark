@@ -3,8 +3,10 @@ stage_def		: "stage" "{" (proc_def|costume_list)* "}"	-> _stage_def
 sprite_def		: "sprite" ident "{" _sprite_content "}"	-> _sprite_def
 _sprite_content	: (proc_def|var_decl|arr_decl|costume_list)*
 costume_list	: "costumes" "{" [string ("," string)*] "}"	-> _costume_list
-proc_def		: "func" ident "(" param_list ")" block_stmt-> _proc_def
-				| "warp" "func" ident "(" param_list ")" block_stmt-> _proc_def_warp
+?proc_def		: proc_def_norm
+				| proc_def_warp
+proc_def_norm	: "func" ident "(" param_list ")" block_stmt-> _proc_def_norm
+proc_def_warp	: "warp" proc_def_norm						-> _proc_def_warp
 param_list		: [ident ("," ident)*]						-> _param_list
 func_call		: ident "(" arg_list ")"					-> _func_call
 procedures_call	: ident "(" arg_list ")"					-> _procedures_call
