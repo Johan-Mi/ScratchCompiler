@@ -1,5 +1,6 @@
 """This module contains the class GrammarTransformer, which is used as a
 transformer by the parser."""
+from re import sub
 from lark import Transformer
 
 
@@ -278,7 +279,7 @@ class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _string(args):
-        return args[0][1:-1]
+        return sub(r"\\([\\\"])", r"\1", args[0][1:-1])
 
     @staticmethod
     def _arg_list(args):
