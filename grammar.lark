@@ -65,6 +65,8 @@ TRUE			: "true"
 FALSE			: "false"
 ident			: CNAME										-> _ident
 string			: ESCAPED_STRING							-> _string
+LINE_COMMENT	: /\s*/ "//" /[^\n]/*
+MULTI_COMMENT	: /\/\*((?!\*\/).)*(\*\/)/s
 
 %import common.WS
 %import common.NUMBER
@@ -72,3 +74,5 @@ string			: ESCAPED_STRING							-> _string
 %import common.ESCAPED_STRING
 
 %ignore WS
+%ignore LINE_COMMENT
+%ignore MULTI_COMMENT

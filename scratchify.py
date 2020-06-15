@@ -56,6 +56,12 @@ def _doubly_link_stmts(first: tuple, rest: list):
             rest[i + 1][0][1]["parent"] = rest[i][0][0]
 
 
+def _number_input(nodes):
+    if nodes[0][0][0] in (12, 13):
+        return [3, nodes[0][0], [4, 0]]
+    return [1, nodes[0][0]]
+
+
 def _stage_def(node: dict, env) -> list:
     return sum((scratchify(i, env) for i in node["procedures"]), [])
 
@@ -152,7 +158,7 @@ def _motion_movesteps(node: dict, env) -> list:
         "next": None,
         "parent": None,
         "inputs": {
-            "STEPS": [1, steps[0][0]]
+            "STEPS": _number_input(steps),
         },
         "fields": {},
         "shadow": False,
@@ -170,8 +176,8 @@ def _motion_gotoxy(node: dict, env) -> list:
         "next": None,
         "parent": None,
         "inputs": {
-            "X": [1, x_coord[0][0]],
-            "Y": [1, y_coord[0][0]]
+            "X": _number_input(x_coord),
+            "Y": _number_input(y_coord)
         },
         "fields": {},
         "shadow": False,
@@ -188,7 +194,7 @@ def _motion_turnright(node: dict, env) -> dict:
         "next": None,
         "parent": None,
         "inputs": {
-            "DEGREES": [1, degrees[0][0]]
+            "DEGREES": _number_input(degrees)
         },
         "fields": {},
         "shadow": False,
@@ -205,7 +211,7 @@ def _motion_turnleft(node: dict, env) -> dict:
         "next": None,
         "parent": None,
         "inputs": {
-            "DEGREES": [1, degrees[0][0]]
+            "DEGREES": _number_input(degrees)
         },
         "fields": {},
         "shadow": False,
@@ -235,7 +241,7 @@ def _motion_pointindirection(node: dict, env) -> list:
         "next": None,
         "parent": None,
         "inputs": {
-            "DIRECTION": [1, direction[0][0]]
+            "DIRECTION": _number_input(direction)
         },
         "fields": {},
         "shadow": False,
@@ -254,9 +260,9 @@ def _motion_glidesecstoxy(node: dict, env) -> list:
         "next": None,
         "parent": None,
         "inputs": {
-            "X": [1, x_coord[0][0]],
-            "Y": [1, y_coord[0][0]],
-            "SECS": [1, secs[0][0]]
+            "X": _number_input(x_coord),
+            "Y": _number_input(y_coord),
+            "SECS": _number_input(secs)
         },
         "fields": {},
         "shadow": False,
@@ -332,7 +338,7 @@ def _control_repeat(node: dict, env) -> list:
         "next": None,
         "parent": None,
         "inputs": {
-            "TIMES": [1, times[0][0]],
+            "TIMES": _number_input(times),
             "SUBSTACK": [2, substack[0][0][0]]
         },
         "fields": {},
@@ -430,8 +436,8 @@ def _bin_numeric_op(opcode: str):
             "next": None,
             "parent": None,
             "inputs": {
-                "NUM1": [1, num1[0][0]],
-                "NUM2": [1, num2[0][0]]
+                "NUM1": _number_input(num1),
+                "NUM2": _number_input(num2)
             },
             "fields": {},
             "shadow": False,
@@ -452,8 +458,8 @@ def _binary_logic_operator(opcode: str):
             "next": None,
             "parent": None,
             "inputs": {
-                "OPERAND1": [1, operand1[0][0]],
-                "OPERAND2": [1, operand2[0][0]]
+                "OPERAND1": _number_input(operand1),
+                "OPERAND2": _number_input(operand2)
             },
             "fields": {},
             "shadow": False,
@@ -472,7 +478,7 @@ def _operator_not(node: dict, env) -> list:
         "next": None,
         "parent": None,
         "inputs": {
-            "OPERAND": [1, operand[0][0]]
+            "OPERAND": _number_input(operand)
         },
         "fields": {},
         "shadow": False,
@@ -490,8 +496,8 @@ def _operator_random(node: dict, env) -> list:
         "next": None,
         "parent": None,
         "inputs": {
-            "FROM": [1, low[0][0]],
-            "TO": [1, high[0][0]]
+            "FROM": _number_input(low),
+            "TO": _number_input(high)
         },
         "fields": {},
         "shadow": False,
@@ -508,7 +514,7 @@ def _data_setvariableto(node: dict, env) -> list:
         "next": None,
         "parent": None,
         "inputs": {
-            "VALUE": [1, value[0][0]]
+            "VALUE": _number_input(value)
         },
         "fields": {
             "VARIABLE": [node["name"], var_id]
@@ -528,7 +534,7 @@ def _data_changevariableby(node: dict, env) -> list:
             "next": None,
             "parent": None,
             "inputs": {
-                "VALUE": [1, value[0][0]]
+                "VALUE": _number_input(value)
             },
             "fields": {
                 "VARIABLE": [node["name"], var_id]
@@ -541,7 +547,7 @@ def _data_changevariableby(node: dict, env) -> list:
         "next": None,
         "parent": None,
         "inputs": {
-            "ITEM": [1, value[0][0]]
+            "ITEM": _number_input(value)
         },
         "fields": {
             "LIST": [node["name"], var_id]
@@ -560,7 +566,7 @@ def _data_itemoflist(node: dict, env) -> list:
         "next": None,
         "parent": None,
         "inputs": {
-            "INDEX": [1, index[0][0]]
+            "INDEX": _number_input(index)
         },
         "fields": {
             "LIST": [node["name"], arr_id]
@@ -580,7 +586,7 @@ def _procedures_call(node: dict, env) -> list:
         "next": None,
         "parent": None,
         "inputs": {
-            i: [1, j[0][0]]
+            i: _number_input(j)
             for i, j in zip(proc["prototype"][1]["inputs"], args)},
         "fields": {},
         "shadow": False,
