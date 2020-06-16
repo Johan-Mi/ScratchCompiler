@@ -7,8 +7,13 @@ from lark import Transformer
 def expect_args(name, count, provided):
     """Raise an exception if count != provided."""
     if count != provided:
-        raise Exception(f"{name} expected {count} arguments but \
-                {provided} were provided")
+        raise Exception(f"{name} expected {count} arguments but {provided} were provided")
+
+
+def expect_at_least_args(name, count, provided):
+    """Raise an exception if count < provided."""
+    if provided < count:
+        raise Exception(f"{name} expected {count} or more arguments but {provided} were provided")
 
 
 class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
@@ -126,9 +131,9 @@ class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _func_call(args):
-        def unary_math_func(operator):
+        def unary_math_func(name, operator):
             def generated_func(node):
-                expect_args(operator, 1, len(node["args"]))
+                expect_args(name, 1, len(node["args"]))
                 return {
                     "type": "mathop",
                     "OPERATOR": operator,
@@ -153,12 +158,14 @@ class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
             return {"type": "operator_length", "STRING": node["args"][0]}
 
         def join(node):
-            expect_args("join", 2, len(node["args"]))
-            return {
-                "type": "operator_join",
-                "STRING1": node["args"][0],
-                "STRING2": node["args"][1]
-            }
+            expect_at_least_args("join", 2, len(node["args"]))
+            def join_(args):
+                return {
+                    "type": "operator_join",
+                    "STRING1": args[0],
+                    "STRING2": args[1] if len(args) == 2 else join_(args[1:])
+                }
+            return join_(node["args"])
 
         def contains(node):
             expect_args("contains", 2, len(node["args"]))
@@ -168,27 +175,41 @@ class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
                 "STRING2": node["args"][1]
             }
 
+        def answer(node):
+            expect_args("answer", 0, len(node["args"]))
+            return {
+                "type": "sensing_answer",
+            }
+
+        def timer(node):
+            expect_args("timer", 0, len(node["args"]))
+            return {
+                "type": "sensing_timer",
+            }
+
         call = {"name": args[0]["name"], "args": args[1]["args"]}
 
         return {
-            "abs": unary_math_func("abs"),
-            "floor": unary_math_func("floor"),
-            "ceiling": unary_math_func("ceiling"),
-            "sqrt": unary_math_func("sqrt"),
-            "sin": unary_math_func("sin"),
-            "cos": unary_math_func("cos"),
-            "tan": unary_math_func("tan"),
-            "asin": unary_math_func("asin"),
-            "acos": unary_math_func("acos"),
-            "atan": unary_math_func("atan"),
-            "ln": unary_math_func("ln"),
-            "log": unary_math_func("log"),
-            "exp": unary_math_func("e ^"),
-            "pow": unary_math_func("10 ^"),
+            "abs": unary_math_func("abs", "abs"),
+            "floor": unary_math_func("floor", "floor"),
+            "ceiling": unary_math_func("ceiling", "ceiling"),
+            "sqrt": unary_math_func("sqrt", "sqrt"),
+            "sin": unary_math_func("sin", "sin"),
+            "cos": unary_math_func("cos", "sin"),
+            "tan": unary_math_func("tan", "tan"),
+            "asin": unary_math_func("asin", "asin"),
+            "acos": unary_math_func("acos", "acos"),
+            "atan": unary_math_func("atan", "atan"),
+            "ln": unary_math_func("ln", "ln"),
+            "log": unary_math_func("log", "log"),
+            "exp": unary_math_func("exp", "e ^"),
+            "pow": unary_math_func("pow", "10 ^"),
             "random": random,
             "join": join,
             "contains": contains,
             "length": length,
+            "answer": answer,
+            "timer": timer,
         }.get(call["name"], unknown_func)(call)
 
     @staticmethod
@@ -253,6 +274,10 @@ class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
                 "SECS": node["args"][1]
             }
 
+        def ask(node):
+            expect_args("ask", 1, len(node["args"]))
+            return {"type": "sensing_askandwait", "QUESTION": node["args"][0]}
+
         call = {
             "type": "procedures_call",
             "name": args[0]["name"],
@@ -271,6 +296,7 @@ class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
             "waitUntil": wait_until,
             "say": say,
             "saySeconds": say_seconds,
+            "ask": ask,
         }.get(call["name"], lambda x: x)(call)
 
     @staticmethod

@@ -505,6 +505,25 @@ def _operator_random(node: dict, env) -> list:
     })] + low + high
 
 
+def _operator_join(node: dict, env) -> list:
+    node["id"] = next(id_maker)
+    string1 = scratchify(node["STRING1"], env)
+    string2 = scratchify(node["STRING2"], env)
+    _assign_parent(node["id"], string1, string2)
+    return [(node["id"], {
+        "opcode": "operator_join",
+        "next": None,
+        "parent": None,
+        "inputs": {
+            "STRING1": _number_input(string1),
+            "STRING2": _number_input(string2)
+        },
+        "fields": {},
+        "shadow": False,
+        "topLevel": False
+    })] + string1 + string2
+
+
 def _data_setvariableto(node: dict, env) -> list:
     node["id"] = next(id_maker)
     var_id = resolve_var(node["name"], env)
@@ -680,6 +699,49 @@ def _looks_sayforsecs(node: dict, env) -> list:
     })] + message + secs
 
 
+def _sensing_askandwait(node: dict, env) -> list:
+    node["id"] = next(id_maker)
+    question = scratchify(node["QUESTION"], env)
+    _assign_parent(node["id"], question)
+    return [(node["id"], {
+        "opcode": "sensing_askandwait",
+        "next": None,
+        "parent": None,
+        "inputs": {
+            "QUESTION": _number_input(question),
+        },
+        "fields": {},
+        "shadow": False,
+        "topLevel": False
+    })] + question
+
+
+def _sensing_answer(node: dict, _) -> list:
+    node["id"] = next(id_maker)
+    return [(node["id"], {
+        "opcode": "sensing_answer",
+        "next": None,
+        "parent": None,
+        "inputs": {},
+        "fields": {},
+        "shadow": False,
+        "topLevel": False
+    })]
+
+
+def _sensing_timer(node: dict, _) -> list:
+    node["id"] = next(id_maker)
+    return [(node["id"], {
+        "opcode": "sensing_timer",
+        "next": None,
+        "parent": None,
+        "inputs": {},
+        "fields": {},
+        "shadow": False,
+        "topLevel": False
+    })]
+
+
 def _program(node: dict, env) -> list:
     for var in node["stage"]["variables"]:
         var["id"] = next(id_maker)
@@ -796,6 +858,7 @@ def scratchify(tree, env=None) -> list:
             "operator_or": _binary_logic_operator("operator_or"),
             "operator_not": _operator_not,
             "operator_random": _operator_random,
+            "operator_join": _operator_join,
             "procedures_definition": _procedures_definition,
             "procedures_call": _procedures_call,
             "control_if": _control_if,
@@ -823,6 +886,9 @@ def scratchify(tree, env=None) -> list:
             "motion_ifonedgebounce": _motion_ifonedgebounce,
             "looks_say": _looks_say,
             "looks_sayforsecs": _looks_sayforsecs,
+            "sensing_askandwait": _sensing_askandwait,
+            "sensing_answer": _sensing_answer,
+            "sensing_timer": _sensing_timer,
         }.get(tree["type"], lambda x, y: [])(tree, env)
     if isinstance(tree, (int, float)):
         return [[[4, tree]]]

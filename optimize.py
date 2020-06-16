@@ -218,6 +218,11 @@ def _looks_sayforsecs(node):
     return node
 
 
+def _sensing_askandwait(node):
+    _basic_optimize(node, "QUESTION")
+    return node
+
+
 def optimize(tree):
     """Returns an optimized version of an AST."""
     if isinstance(tree, dict):
@@ -256,6 +261,7 @@ def optimize(tree):
             "mathop": _mathop,
             "looks_say": _looks_say,
             "looks_sayforsecs": _looks_sayforsecs,
+            "sensing_askandwait": _sensing_askandwait,
         }.get(tree["type"], lambda x: x)(tree)
     if isinstance(tree, list):
         force_list = lambda n: n if isinstance(n, list) else [n]
