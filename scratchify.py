@@ -755,6 +755,49 @@ def _sensing_username(node: dict, _) -> list:
     })]
 
 
+def _sensing_mousex(node: dict, _) -> list:
+    node["id"] = next(id_maker)
+    return [(node["id"], {
+        "opcode": "sensing_mousex",
+        "next": None,
+        "parent": None,
+        "inputs": {},
+        "fields": {},
+        "shadow": False,
+        "topLevel": False
+    })]
+
+
+def _sensing_mousey(node: dict, _) -> list:
+    node["id"] = next(id_maker)
+    return [(node["id"], {
+        "opcode": "sensing_mousey",
+        "next": None,
+        "parent": None,
+        "inputs": {},
+        "fields": {},
+        "shadow": False,
+        "topLevel": False
+    })]
+
+
+def _operator_round(node: dict, env) -> list:
+    node["id"] = next(id_maker)
+    num = scratchify(node["NUM"], env)
+    _assign_parent(node["id"], num)
+    return [(node["id"], {
+        "opcode": "operator_round",
+        "next": None,
+        "parent": None,
+        "inputs": {
+            "NUM": _number_input(num)
+        },
+        "fields": {},
+        "shadow": False,
+        "topLevel": False
+    })] + num
+
+
 def _program(node: dict, env) -> list:
     for var in node["stage"]["variables"]:
         var["id"] = next(id_maker)
@@ -903,6 +946,9 @@ def scratchify(tree, env=None) -> list:
             "sensing_answer": _sensing_answer,
             "sensing_timer": _sensing_timer,
             "sensing_username": _sensing_username,
+            "sensing_mousex": _sensing_mousex,
+            "sensing_mousey": _sensing_mousey,
+            "operator_round": _operator_round,
         }.get(tree["type"], lambda x, y: [])(tree, env)
     if isinstance(tree, (int, float)):
         return [[[4, tree]]]

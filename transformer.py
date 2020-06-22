@@ -131,12 +131,12 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _func_call(args):
-        def unary_math_func(name, operator):
+        def unary_math_func(name, operator=None):
             def generated_func(node):
                 expect_args(name, 1, len(node["args"]))
                 return {
                     "type": "mathop",
-                    "OPERATOR": operator,
+                    "OPERATOR": operator or name,
                     "NUM": node["args"][0]
                 }
 
@@ -188,26 +188,46 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
             }
 
         def username(node):
-            expect_args("timer", 0, len(node["args"]))
+            expect_args("username", 0, len(node["args"]))
             return {
                 "type": "sensing_username",
+            }
+
+        def mousex(node):
+            expect_args("mouseX", 0, len(node["args"]))
+            return {
+                "type": "sensing_mousex",
+            }
+
+        def mousey(node):
+            expect_args("mouseY", 0, len(node["args"]))
+            return {
+                "type": "sensing_mousey",
+            }
+
+
+        def round_(node):
+            expect_args("round", 1, len(node["args"]))
+            return {
+                "type": "operator_round",
+                "NUM": node["args"][0]
             }
 
         call = {"name": args[0]["name"], "args": args[1]["args"]}
 
         return {
-            "abs": unary_math_func("abs", "abs"),
-            "floor": unary_math_func("floor", "floor"),
-            "ceiling": unary_math_func("ceiling", "ceiling"),
-            "sqrt": unary_math_func("sqrt", "sqrt"),
-            "sin": unary_math_func("sin", "sin"),
-            "cos": unary_math_func("cos", "sin"),
-            "tan": unary_math_func("tan", "tan"),
-            "asin": unary_math_func("asin", "asin"),
-            "acos": unary_math_func("acos", "acos"),
-            "atan": unary_math_func("atan", "atan"),
-            "ln": unary_math_func("ln", "ln"),
-            "log": unary_math_func("log", "log"),
+            "abs": unary_math_func("abs"),
+            "floor": unary_math_func("floor"),
+            "ceiling": unary_math_func("ceiling"),
+            "sqrt": unary_math_func("sqrt"),
+            "sin": unary_math_func("sin"),
+            "cos": unary_math_func("cos"),
+            "tan": unary_math_func("tan"),
+            "asin": unary_math_func("asin"),
+            "acos": unary_math_func("acos"),
+            "atan": unary_math_func("atan"),
+            "ln": unary_math_func("ln"),
+            "log": unary_math_func("log"),
             "exp": unary_math_func("exp", "e ^"),
             "pow": unary_math_func("pow", "10 ^"),
             "random": random,
@@ -217,6 +237,9 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
             "answer": answer,
             "timer": timer,
             "username": username,
+            "mouseX": mousex,
+            "mouseY": mousey,
+            "round": round_,
         }.get(call["name"], unknown_func)(call)
 
     @staticmethod
