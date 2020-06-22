@@ -742,6 +742,19 @@ def _sensing_timer(node: dict, _) -> list:
     })]
 
 
+def _sensing_username(node: dict, _) -> list:
+    node["id"] = next(id_maker)
+    return [(node["id"], {
+        "opcode": "sensing_username",
+        "next": None,
+        "parent": None,
+        "inputs": {},
+        "fields": {},
+        "shadow": False,
+        "topLevel": False
+    })]
+
+
 def _program(node: dict, env) -> list:
     for var in node["stage"]["variables"]:
         var["id"] = next(id_maker)
@@ -889,6 +902,7 @@ def scratchify(tree, env=None) -> list:
             "sensing_askandwait": _sensing_askandwait,
             "sensing_answer": _sensing_answer,
             "sensing_timer": _sensing_timer,
+            "sensing_username": _sensing_username,
         }.get(tree["type"], lambda x, y: [])(tree, env)
     if isinstance(tree, (int, float)):
         return [[[4, tree]]]

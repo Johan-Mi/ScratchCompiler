@@ -16,7 +16,7 @@ def expect_at_least_args(name, count, provided):
         raise Exception(f"{name} expected {count} or more arguments but {provided} were provided")
 
 
-class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
+class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
     """This class is used as a transformer when parsing source code that will be
     compiled to scratch."""
     @staticmethod
@@ -187,6 +187,12 @@ class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
                 "type": "sensing_timer",
             }
 
+        def username(node):
+            expect_args("timer", 0, len(node["args"]))
+            return {
+                "type": "sensing_username",
+            }
+
         call = {"name": args[0]["name"], "args": args[1]["args"]}
 
         return {
@@ -210,6 +216,7 @@ class GrammarTransformer(Transformer):  # pylint: disable=too-few-public-methods
             "length": length,
             "answer": answer,
             "timer": timer,
+            "username": username,
         }.get(call["name"], unknown_func)(call)
 
     @staticmethod

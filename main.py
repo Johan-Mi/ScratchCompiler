@@ -7,16 +7,16 @@ import shutil
 from hashlib import md5
 from lark import Lark
 
-from transformer import GrammarTransformer
+from transformer import ScratchTransformer
 from optimize import optimize
 from scratchify import scratchify
 
 
 def main():
     """Compiles program.scratch to a scratch project."""
-    with open("grammar.lark") as grammar_file:
-        grammar = grammar_file.read()
-    parser = Lark(grammar, parser="lalr", transformer=GrammarTransformer)
+    parser = Lark.open("grammar.lark",
+                       parser="lalr",
+                       transformer=ScratchTransformer)
 
     with open("program.scratch") as source_file:
         source_code = source_file.read()
