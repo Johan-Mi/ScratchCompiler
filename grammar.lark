@@ -1,44 +1,46 @@
 start			: (stage_def|sprite_def|var_decl|arr_decl)*	-> _start
-stage_def		: "stage" "{" (proc_def|costume_list)* "}"	-> _stage_def
-sprite_def		: "sprite" ident "{" _sprite_content "}"	-> _sprite_def
-_sprite_content	: (proc_def|var_decl|arr_decl|costume_list)*
+stage_def		: "stage" ":" _stage_content				-> _stage_def
+_stage_content	: _NEWLINE _INDENT (proc_def|costume_list)+ _DEDENT
+sprite_def		: "sprite" ident ":" _sprite_content		-> _sprite_def
+_sprite_content	: _NEWLINE _INDENT (proc_def|var_decl|arr_decl|costume_list)+ _DEDENT
 costume_list	: "costumes" "{" [string ("," string)*] "}"	-> _costume_list
 ?proc_def		: proc_def_norm
 				| proc_def_warp
-proc_def_norm	: "func" ident "(" param_list ")" block_stmt-> _proc_def_norm
+proc_def_norm	: "def" ident "(" param_list ")" ":" suite -> _proc_def_norm
 proc_def_warp	: "warp" proc_def_norm						-> _proc_def_warp
 param_list		: [ident ("," ident)*]						-> _param_list
 func_call		: ident "(" arg_list ")"					-> _func_call
 procedures_call	: ident "(" arg_list ")"					-> _procedures_call
 arg_list		: [expr ("," expr)*]						-> _arg_list
-?stmt			: procedures_call ";"
-				| if_stmt
+?stmt			: simple_stmt
+				| compound_stmt
+?simple_stmt	: small_stmt (";" small_stmt)* [";"] _NEWLINE
+?small_stmt		: procedures_call
+				| var_assignment
+?compound_stmt	: if_stmt
 				| until_loop
 				| while_loop
 				| repeat_loop
 				| forever_loop
-				| var_assignment ";"
-stmts			: stmt*										-> _stmts
-block_stmt		: "{" stmts "}"								-> _block_stmt
-var_decl		: "var" ident ";"							-> _var_decl
-arr_decl		: "arr" ident ";"							-> _arr_decl
+var_decl		: "var" ident _NEWLINE						-> _var_decl
+arr_decl		: "arr" ident _NEWLINE						-> _arr_decl
 arr_index       : ident "[" expr "]"                        -> _arr_index
-if_stmt			: "if" expr block_stmt						-> _if_stmt
-				| "if" expr block_stmt "else" block_stmt	-> _if_else_stmt
-				| "if" expr block_stmt "else" if_stmt		-> _if_elif_stmt
-until_loop		: "until" expr block_stmt					-> _until_loop
-while_loop		: "while" expr block_stmt					-> _while_loop
-repeat_loop		: "repeat" expr block_stmt					-> _repeat_loop
-forever_loop	: "forever" block_stmt						-> _forever_loop
+if_stmt			: "if" expr ":" suite						-> _if_stmt
+				| "if" expr ":" suite "else" ":" suite		-> _if_else_stmt
+				| "if" expr ":" suite  "else" ":" if_stmt	-> _if_elif_stmt
+until_loop		: "until" expr ":" suite					-> _until_loop
+while_loop		: "while" expr ":" suite					-> _while_loop
+repeat_loop		: "repeat" expr ":" suite					-> _repeat_loop
+forever_loop	: "forever" ":" suite						-> _forever_loop
 var_assignment	: ident "=" expr							-> _var_eq
 				| ident "+=" expr							-> _var_peq
 				| ident "-=" expr							-> _var_meq
 				| ident "*=" expr							-> _var_teq
 				| ident "/=" expr							-> _var_deq
 ?expr			: logical_or
-?logical_or		: logical_or "||" logical_and				-> _logical_or
+?logical_or		: logical_or "or" logical_and				-> _logical_or
 				| logical_and
-?logical_and	: logical_and "&&" comparision				-> _logical_and
+?logical_and	: logical_and "and" comparision				-> _logical_and
 				| comparision
 ?comparision	: comparision ">" addition					-> _greater_than
 				| comparision "<" addition					-> _less_than
@@ -51,7 +53,7 @@ var_assignment	: ident "=" expr							-> _var_eq
 				| multiplication "/" logical_not			-> _division
 				| multiplication "%" logical_not			-> _modulo
 				| logical_not
-?logical_not	: "!" logical_not							-> _logical_not
+?logical_not	: "not" logical_not							-> _logical_not
 				| atom
 ?atom			: NUMBER									-> _number
 				| string
@@ -62,19 +64,22 @@ var_assignment	: ident "=" expr							-> _var_eq
 				| "-" expr									-> _negate
 				| TRUE										-> _true
 				| FALSE										-> _false
+suite			: simple_stmt
+				| _NEWLINE _INDENT stmt+ _DEDENT			-> _stmts
 
-TRUE			: "true"
-FALSE			: "false"
+TRUE			: "True"
+FALSE			: "False"
 ident			: CNAME										-> _ident
 string			: ESCAPED_STRING							-> _string
-LINE_COMMENT	: /\s*/ "//" /[^\n]/*
-MULTI_COMMENT	: /\/\*((?!\*\/).)*(\*\/)/s
+COMMENT			: /#[^\n]*/
+_NEWLINE		: ( /\r?\n[\t ]*/ | COMMENT)+
 
-%import common.WS
 %import common.NUMBER
 %import common.CNAME
 %import common.ESCAPED_STRING
 
-%ignore WS
-%ignore LINE_COMMENT
-%ignore MULTI_COMMENT
+%ignore /[\t \f]+/
+%ignore /\\[\t \f]*\r?\n/
+%ignore COMMENT
+
+%declare _INDENT _DEDENT

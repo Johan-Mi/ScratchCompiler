@@ -96,17 +96,14 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
         return {"type": "stmts", "stmts": args}
 
     @staticmethod
-    def _block_stmt(args):
-        return {"type": "block_stmt", "body": args[0]}
-
-    @staticmethod
     def _proc_def_norm(args):
+        # print(args)
         return {
             "type": "procedures_definition",
             "name": args[0]["name"],
             "params": args[1]["params"],
             "warp": "false",
-            "body": args[2]["body"]["stmts"]
+            "body": args[2]["stmts"]
         }
 
     @staticmethod
@@ -430,7 +427,7 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
         return {
             "type": "control_if",
             "CONDITION": args[0],
-            "true_branch": args[1]["body"]["stmts"]
+            "true_branch": args[1]["stmts"]
         }
 
     @staticmethod
@@ -438,8 +435,8 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
         return {
             "type": "control_if_else",
             "CONDITION": args[0],
-            "true_branch": args[1]["body"]["stmts"],
-            "false_branch": args[2]["body"]["stmts"]
+            "true_branch": args[1]["stmts"],
+            "false_branch": args[2]["stmts"]
         }
 
     @staticmethod
@@ -447,7 +444,7 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
         return {
             "type": "control_if_else",
             "CONDITION": args[0],
-            "true_branch": args[1]["body"]["stmts"],
+            "true_branch": args[1]["stmts"],
             "false_branch": [args[2]]
         }
 
@@ -508,7 +505,7 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
         return {
             "type": "control_repeat_until",
             "CONDITION": args[0],
-            "body": args[1]["body"]["stmts"]
+            "body": args[1]["stmts"]
         }
 
     @staticmethod
@@ -516,7 +513,7 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
         return {
             "type": "control_while",
             "CONDITION": args[0],
-            "body": args[1]["body"]["stmts"]
+            "body": args[1]["stmts"]
         }
 
     @staticmethod
@@ -524,12 +521,12 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
         return {
             "type": "control_repeat",
             "TIMES": args[0],
-            "body": args[1]["body"]["stmts"]
+            "body": args[1]["stmts"]
         }
 
     @staticmethod
     def _forever_loop(args):
-        return {"type": "control_forever", "body": args[0]["body"]["stmts"]}
+        return {"type": "control_forever", "body": args[0]["stmts"]}
 
     @staticmethod
     def _true(_):

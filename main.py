@@ -8,6 +8,7 @@ from hashlib import md5
 from lark import Lark
 
 from transformer import ScratchTransformer
+from indenter import ScratchIndenter
 from optimize import optimize
 from scratchify import scratchify
 
@@ -16,11 +17,13 @@ def main():
     """Compiles program.scratch to a scratch project."""
     parser = Lark.open("grammar.lark",
                        parser="lalr",
-                       transformer=ScratchTransformer)
+                       transformer=ScratchTransformer,
+                       postlex=ScratchIndenter())
 
     with open("program.scratch") as source_file:
         source_code = source_file.read()
     parsed = parser.parse(source_code)
+    # print(parsed)
     parsed = optimize(parsed)
     parsed = scratchify(parsed)
 
