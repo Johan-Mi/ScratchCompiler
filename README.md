@@ -89,7 +89,7 @@ def my_procedure(a, b, c):
 	doSomething()
 	doSomethingElse()
 ```
-Creates the procedure `my\_procedure` that takes the arguments `a`, `b`, and
+Creates the procedure `my_procedure` that takes the arguments `a`, `b`, and
 `c`. When called, it will run the code in the braces. Procedures can belong to
 sprites or the stage.
 
