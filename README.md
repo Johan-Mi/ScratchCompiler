@@ -90,7 +90,7 @@ def my_procedure(a, b, c):
 	doSomethingElse()
 ```
 Creates the procedure `my_procedure` that takes the arguments `a`, `b`, and
-`c`. When called, it will run the code in the braces. Procedures can belong to
+`c`. When called, it will run the indented code block. Procedures can belong to
 sprites or the stage.
 
 ```python
