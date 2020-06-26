@@ -13,7 +13,7 @@ stage:
 	...
 ```
 There can only be one stage. It can contain variables, lists, costumes, and
-functions.
+procedures.
 
 ### Sprites
 
@@ -22,7 +22,7 @@ sprite name_of_sprite:
 	...
 ```
 You can create as many sprites as you want. Sprites can, just like the stage,
-contain variables lists, costumes and functions.
+contain variables lists, costumes and procedures.
 
 ### Costumes
 
@@ -80,7 +80,7 @@ bar += foo
 
 Appends the value `foo` to the end of the array `bar`.
 
-TODO: Add more array functions.
+TODO: Add more array function and procedures.
 
 ### Procedures
 
