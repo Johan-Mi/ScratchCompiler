@@ -7,13 +7,16 @@ from lark import Transformer
 def expect_args(name, count, provided):
     """Raise an exception if count != provided."""
     if count != provided:
-        raise Exception(f"{name} expected {count} arguments but {provided} were provided")
+        raise Exception(
+            f"{name} expected {count} arguments but {provided} were provided")
 
 
 def expect_at_least_args(name, count, provided):
     """Raise an exception if count < provided."""
     if provided < count:
-        raise Exception(f"{name} expected {count} or more arguments but {provided} were provided")
+        raise Exception(
+            f"{name} expected {count} or more arguments but {provided} were provided"
+        )
 
 
 class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
@@ -156,12 +159,14 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
 
         def join(node):
             expect_at_least_args("join", 2, len(node["args"]))
+
             def join_(args):
                 return {
                     "type": "operator_join",
                     "STRING1": args[0],
                     "STRING2": args[1] if len(args) == 2 else join_(args[1:])
                 }
+
             return join_(node["args"])
 
         def contains(node):
@@ -202,13 +207,9 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
                 "type": "sensing_mousey",
             }
 
-
         def round_(node):
             expect_args("round", 1, len(node["args"]))
-            return {
-                "type": "operator_round",
-                "NUM": node["args"][0]
-            }
+            return {"type": "operator_round", "NUM": node["args"][0]}
 
         call = {"name": args[0]["name"], "args": args[1]["args"]}
 
@@ -424,29 +425,28 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _if_stmt(args):
-        return {
-            "type": "control_if",
-            "CONDITION": args[0],
-            "true_branch": args[1]["stmts"]
-        }
+        def if_stmt(args):
+            if len(args) == 2:
+                return {
+                    "type": "control_if",
+                    "CONDITION": args[0],
+                    "true_branch": args[1]["stmts"]
+                }
+            if len(args) == 3:
+                return {
+                    "type": "control_if_else",
+                    "CONDITION": args[0],
+                    "true_branch": args[1]["stmts"],
+                    "false_branch": args[2]["stmts"]
+                }
+            return {
+                "type": "control_if_else",
+                "CONDITION": args[0],
+                "true_branch": args[1]["stmts"],
+                "false_branch": if_stmt(args[2:])
+            }
 
-    @staticmethod
-    def _if_else_stmt(args):
-        return {
-            "type": "control_if_else",
-            "CONDITION": args[0],
-            "true_branch": args[1]["stmts"],
-            "false_branch": args[2]["stmts"]
-        }
-
-    @staticmethod
-    def _if_elif_stmt(args):
-        return {
-            "type": "control_if_else",
-            "CONDITION": args[0],
-            "true_branch": args[1]["stmts"],
-            "false_branch": [args[2]]
-        }
+        return if_stmt(args)
 
     @staticmethod
     def _var_eq(args):

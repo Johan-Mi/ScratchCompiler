@@ -4,6 +4,8 @@ Compiles code into scratch projects.
 
 ## Language reference
 
+If you've ever used Pyton, you will probably find the syntax familiar.
+
 ### The stage
 
 ```python
@@ -19,7 +21,7 @@ functions.
 sprite name_of_sprite:
 	...
 ```
-You can create as many sprites as you want to. Sprites can, just like the stage,
+You can create as many sprites as you want. Sprites can, just like the stage,
 contain variables lists, costumes and functions.
 
 ### Costumes
@@ -37,7 +39,7 @@ by their file names.
 ```python
 var foo
 ```
-Declares a variable named "foo". Variables can either be declared in the global
+Declares a variable named `foo`. Variables can either be declared in the global
 scope or in a sprite.
 
 ```python
@@ -64,26 +66,38 @@ foo = foo / 10
 ```python
 arr bar
 ```
-Declares an array named bar;
-
-TODO: Make arrays usable
-
-### Functions
+Declares an array named `bar`.
 
 ```python
-def my_function(a, b, c):
+bar[n]
+```
+
+Returns the `n`th element of the array `bar`. Array indices start at 1.
+
+```python
+bar += foo
+```
+
+Appends the value `foo` to the end of the array `bar`.
+
+TODO: Add more array functions.
+
+### Procedures
+
+```python
+def my_procedure(a, b, c):
 	doSomething()
 	doSomethingElse()
 ```
-Creates the function "my\_function" that takes the arguments "a", "b", and "c".
-When called, it will run the code in the braces. Functions can belong to sprites
-or the stage.
+Creates the procedure `my\_procedure` that takes the arguments `a`, `b`, and
+`c`. When called, it will run the code in the braces. Procedures can belong to
+sprites or the stage.
 
 ```python
 warp def render():
 	...
 ```
-The "warp" keyword applies "run without screen refresh" to a function.
+The `warp` keyword applies "run without screen refresh" to a procedure.
 
 ### If statements
 
@@ -91,7 +105,7 @@ The "warp" keyword applies "run without screen refresh" to a function.
 if a_condition:
 	doSomething()
 ```
-Run doSomething() if a\_condition is true.
+Run `doSomething()` if `a_condition` is true.
 
 ```python
 if a_condition:
@@ -99,14 +113,15 @@ if a_condition:
 else:
 	branch2()
 ```
-Run branch1() if a\_condition is true, otherwise run branch2().
+Run `branch1()` if `a_condition` is true, otherwise run `branch2()`.
 
 ```python
 if a_condition:
 	branch1()
-else if another_condition:
+elif another_condition:
 	branch2()
 ```
-Run branch1() if a\_condition is true. If it's not true, continue down and run
-branch2() if another_condition is true. "else if"s can be chained, and the chain
-can optionally end with an "else" that will run if all of the "else if"s fail.
+Run `branch1()` if `a_condition` is true. If it's not true, continue down and
+run `branch2()` if `another_condition` is true. `elif`s can be chained, and the
+chain can optionally end with an `else` that will run if all of the conditions
+fail.
