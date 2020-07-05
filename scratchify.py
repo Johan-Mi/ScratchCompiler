@@ -22,7 +22,7 @@ def resolve_arr(name: str, env) -> str:
     raise NameError(f"Identifier '{name}' is not defined")
 
 
-def resolve_var_or_arr(name: str, env) -> str:
+def resolve_var_or_arr(name: str, env):
     """Finds the variable or list with specified name in env."""
     for owner in env["sprite"], env["stage"]:
         for var in owner["variables"]:
@@ -56,7 +56,7 @@ def _doubly_link_stmts(first: tuple, rest: list):
             rest[i + 1][0][1]["parent"] = rest[i][0][0]
 
 
-def _number_input(nodes):
+def _number_input(nodes) -> list:
     if nodes[0][0][0] in (12, 13):
         return [3, nodes[0][0], [4, 0]]
     return [1, nodes[0][0]]
@@ -75,9 +75,11 @@ def _procedures_definition(node: dict, env) -> list:
 
     params = [scratchify(i, env)[0] for i in node["params"]]
 
+    body = [scratchify(i, env) for i in node["body"]]
+
     definition = (node["id"], {
         "opcode": "procedures_definition",
-        "next": None,
+        "next": body[0][0][0] if len(body) > 0 else None,
         "parent": None,
         "inputs": {
             "custom_block": [1, next(id_maker)]
@@ -89,12 +91,13 @@ def _procedures_definition(node: dict, env) -> list:
         "y": 0
     })
 
+    prototype_inputs = {next(id_maker): [1, i[0]] for i in params}
+
     prototype = (definition[1]["inputs"]["custom_block"][1], {
         "opcode": "procedures_prototype",
         "next": None,
         "parent": definition[0],
-        "inputs": {next(id_maker): [1, i[0]]
-                   for i in params},
+        "inputs": prototype_inputs,
         "fields": {},
         "shadow": True,
         "topLevel": False,
@@ -105,7 +108,7 @@ def _procedures_definition(node: dict, env) -> list:
             "proccode":
             node["name"] + " %s" * len(params),
             "argumentids":
-            None,
+            str(list(prototype_inputs)).replace("'", "\""),
             "argumentnames":
             str([i["name"] for i in node["params"]]).replace("'", "\""),
             "argumentdefaults":
@@ -114,13 +117,6 @@ def _procedures_definition(node: dict, env) -> list:
             node["warp"]
         }
     })
-
-    body = [scratchify(i, env) for i in node["body"]]
-    if len(body) > 0:
-        definition[1]["next"] = body[0][0][0]
-
-    prototype[1]["mutation"]["argumentids"] = str(list(
-        prototype[1]["inputs"])).replace("'", "\"")
 
     for i in params:
         i[1]["parent"] = prototype[0]

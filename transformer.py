@@ -1,4 +1,4 @@
-"""This module contains the class GrammarTransformer, which is used as a
+"""This module contains the class ScratchTransformer, which is used as a
 transformer by the parser."""
 from re import sub
 from lark import Transformer
@@ -100,7 +100,6 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _proc_def_norm(args):
-        # print(args)
         return {
             "type": "procedures_definition",
             "name": args[0]["name"],

@@ -25,7 +25,7 @@ arg_list		: [expr ("," expr)*]						-> _arg_list
 var_decl		: "var" ident _NEWLINE						-> _var_decl
 arr_decl		: "arr" ident _NEWLINE						-> _arr_decl
 arr_index       : ident "[" expr "]"                        -> _arr_index
-if_stmt			: "if" expr ":" suite ("elif" expr ":" suite)* ["else": suite]	-> _if_stmt
+if_stmt			: "if" expr ":" suite ("elif" expr ":" suite)* ["else" ":" suite]	-> _if_stmt
 until_loop		: "until" expr ":" suite					-> _until_loop
 while_loop		: "while" expr ":" suite					-> _while_loop
 repeat_loop		: "repeat" expr ":" suite					-> _repeat_loop
