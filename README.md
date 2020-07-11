@@ -37,7 +37,7 @@ by their file names.
 ### Variables
 
 ```python
-var foo
+foo : var
 ```
 Declares a variable named `foo`. Variables can either be declared in the global
 scope or in a sprite.
@@ -64,7 +64,7 @@ foo = foo / 10
 ### Arrays
 
 ```python
-arr bar
+bar : arr
 ```
 Declares an array named `bar`.
 
@@ -76,6 +76,14 @@ Returns the `n`th element of the array `bar`. Array indices start at 1.
 
 ```python
 bar += foo
+```
+
+Appends the value `foo` to the end of the array `bar`.
+
+### Array procedures
+
+```python
+bar.append(foo)
 ```
 
 Appends the value `foo` to the end of the array `bar`.

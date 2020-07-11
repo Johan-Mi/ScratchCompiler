@@ -7,14 +7,14 @@ from lark import Transformer
 def expect_args(name, count, provided):
     """Raise an exception if count != provided."""
     if count != provided:
-        raise Exception(
+        raise TypeError(
             f"{name} expected {count} arguments but {provided} were provided")
 
 
 def expect_at_least_args(name, count, provided):
     """Raise an exception if count < provided."""
     if provided < count:
-        raise Exception(
+        raise TypeError(
             f"{name} expected {count} or more arguments but {provided} were provided"
         )
 
@@ -325,6 +325,24 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
             "saySeconds": say_seconds,
             "ask": ask,
         }.get(call["name"], lambda x: x)(call)
+
+    @staticmethod
+    def _member_func_call(args):
+        return {
+            "type": "member_func_call",
+            "caller": args[0]["name"],
+            "name": args[1]["name"],
+            "args": args[2]["args"],
+        }
+
+    @staticmethod
+    def _member_proc_call(args):
+        return {
+            "type": "member_proc_call",
+            "caller": args[0]["name"],
+            "name": args[1]["name"],
+            "args": args[2]["args"],
+        }
 
     @staticmethod
     def _number(args):

@@ -262,6 +262,8 @@ def optimize(tree):
             "looks_say": _looks_say,
             "looks_sayforsecs": _looks_sayforsecs,
             "sensing_askandwait": _sensing_askandwait,
+            "member_func_call": _procedures_call,
+            "member_proc_call": _procedures_call,
         }.get(tree["type"], lambda x: x)(tree)
     if isinstance(tree, list):
         force_list = lambda n: n if isinstance(n, list) else [n]

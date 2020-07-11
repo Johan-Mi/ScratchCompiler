@@ -11,7 +11,7 @@ def resolve_var(name: str, env) -> str:
                                env["stage"]["variables"]):
         if var["name"] == name:
             return var["id"]
-    raise NameError(f"Identifier '{name}' is not defined")
+    raise NameError(f"Variable '{name}' does not exist")
 
 
 def resolve_arr(name: str, env) -> str:
@@ -19,7 +19,7 @@ def resolve_arr(name: str, env) -> str:
     for arr in itertools.chain(env["sprite"]["lists"], env["stage"]["lists"]):
         if arr["name"] == name:
             return arr["id"]
-    raise NameError(f"Identifier '{name}' is not defined")
+    raise NameError(f"Array '{name}' does not exist")
 
 
 def resolve_var_or_arr(name: str, env):
@@ -31,7 +31,7 @@ def resolve_var_or_arr(name: str, env):
         for arr in owner["lists"]:
             if arr["name"] == name:
                 return "arr", arr["id"]
-    raise NameError(f"Identifier '{name}' is not defined")
+    raise NameError(f"Variable or array '{name}' does not exist")
 
 
 def resolve_proc(name: str, env) -> str:
@@ -39,7 +39,30 @@ def resolve_proc(name: str, env) -> str:
     for proc in env["sprite"]["procedures"]:
         if proc["name"] == name:
             return proc
-    raise NameError(f"Identifier '{name}' is not defined")
+    raise NameError(f"Procedure '{name}' does not exist")
+
+
+def resolve_ident(name: str, env) -> str:
+    """Finds the variable, array, procedure or sprite with specified name in
+    env."""
+    for var in env["sprite"]["variables"]:
+        if var["name"] == name:
+            return "var", var["id"]
+    for arr in env["sprite"]["lists"]:
+        if arr["name"] == name:
+            return "arr", arr["id"]
+    for proc in env["sprite"]["procedures"]:
+        if proc["name"] == name:
+            return "proc", proc
+    for var in env["stage"]["variables"]:
+        if var["name"] == name:
+            return "var", var["id"]
+    for arr in env["stage"]["lists"]:
+        if arr["name"] == name:
+            return "arr", arr["id"]
+    if name == "stage":
+        return "stage", env["stage"]
+    raise NameError(f"Name '{name}' is not defined")
 
 
 def _assign_parent(parent_id: str, *args):
@@ -794,6 +817,47 @@ def _operator_round(node: dict, env) -> list:
     })] + num
 
 
+def _member_proc_call(node: dict, env) -> list:
+    def expect_args(caller, name, count, provided):
+        """Raise an exception if count != provided."""
+        if count != provided:
+            raise TypeError(
+                f"{caller}.{name} expected {count} arguments but {provided} were provided")
+
+    node["id"] = next(id_maker)
+    caller_type, caller = resolve_ident(node["caller"], env)
+    if caller_type == "var":
+        raise AttributeError(
+            f"Variable '{node['caller']} has no procedure '{node['name']}'")
+    if caller_type == "arr":
+        def unknown_proc(_):
+            raise AttributeError(
+                f"Array '{node['caller']}' has no procedure '{node['name']}")
+
+        def append(arr, args):
+            expect_args(node["caller"], node["name"], 1, len(args))
+
+            value = scratchify(args[0], env)
+            _assign_parent(node["id"], value)
+            return [(node["id"], {
+                "opcode": "data_addtolist",
+                "next": None,
+                "parent": None,
+                "inputs": {
+                    "ITEM": _number_input(value)
+                },
+                "fields": {
+                    "LIST": [node["caller"], arr]
+                },
+                "shadow": False,
+                "topLevel": False
+            })] + value
+
+        return {
+            "append": append,
+        }.get(node["name"], unknown_proc)(caller, node["args"])
+
+
 def _program(node: dict, env) -> list:
     for var in node["stage"]["variables"]:
         var["id"] = next(id_maker)
@@ -945,6 +1009,7 @@ def scratchify(tree, env=None) -> list:
             "sensing_mousex": _sensing_mousex,
             "sensing_mousey": _sensing_mousey,
             "operator_round": _operator_round,
+            "member_proc_call": _member_proc_call,
         }.get(tree["type"], lambda x, y: [])(tree, env)
     if isinstance(tree, (int, float)):
         return [[[4, tree]]]

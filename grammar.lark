@@ -11,19 +11,22 @@ proc_def_warp	: "warp" proc_def_norm						-> _proc_def_warp
 param_list		: [ident ("," ident)*]						-> _param_list
 func_call		: ident "(" arg_list ")"					-> _func_call
 procedures_call	: ident "(" arg_list ")"					-> _procedures_call
+member_func_call: ident "." ident "(" arg_list ")"			-> _member_func_call
+member_proc_call: ident "." ident "(" arg_list ")"			-> _member_proc_call
 arg_list		: [expr ("," expr)*]						-> _arg_list
 ?stmt			: simple_stmt
 				| compound_stmt
 ?simple_stmt	: small_stmt (";" small_stmt)* [";"] _NEWLINE
 ?small_stmt		: procedures_call
 				| var_assignment
+				| member_proc_call
 ?compound_stmt	: if_stmt
 				| until_loop
 				| while_loop
 				| repeat_loop
 				| forever_loop
-var_decl		: "var" ident _NEWLINE						-> _var_decl
-arr_decl		: "arr" ident _NEWLINE						-> _arr_decl
+var_decl		:  ident ":" "var" _NEWLINE					-> _var_decl
+arr_decl		:  ident ":" "arr" _NEWLINE					-> _arr_decl
 arr_index       : ident "[" expr "]"                        -> _arr_index
 if_stmt			: "if" expr ":" suite ("elif" expr ":" suite)* ["else" ":" suite]	-> _if_stmt
 until_loop		: "until" expr ":" suite					-> _until_loop
@@ -57,6 +60,7 @@ var_assignment	: ident "=" expr							-> _var_eq
 				| string
 				| ident
 				| func_call
+				| member_func_call
                 | arr_index
 				| "(" expr ")"
 				| "-" expr									-> _negate
