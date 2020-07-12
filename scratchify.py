@@ -822,7 +822,8 @@ def _member_proc_call(node: dict, env) -> list:
         """Raise an exception if count != provided."""
         if count != provided:
             raise TypeError(
-                f"{caller}.{name} expected {count} arguments but {provided} were provided")
+                f"{caller}.{name}() expected {count} arguments but {provided} were provided"
+            )
 
     node["id"] = next(id_maker)
     caller_type, caller = resolve_ident(node["caller"], env)
@@ -830,6 +831,7 @@ def _member_proc_call(node: dict, env) -> list:
         raise AttributeError(
             f"Variable '{node['caller']} has no procedure '{node['name']}'")
     if caller_type == "arr":
+
         def unknown_proc(_):
             raise AttributeError(
                 f"Array '{node['caller']}' has no procedure '{node['name']}")
@@ -853,8 +855,24 @@ def _member_proc_call(node: dict, env) -> list:
                 "topLevel": False
             })] + value
 
+        def clear(arr, args):
+            expect_args(node["caller"], node["name"], 0, len(args))
+
+            return [(node["id"], {
+                "opcode": "data_deletealloflist",
+                "next": None,
+                "parent": None,
+                "inputs": {},
+                "fields": {
+                    "LIST": [node["caller"], arr]
+                },
+                "shadow": False,
+                "topLevel": False
+            })]
+
         return {
             "append": append,
+            "clear": clear,
         }.get(node["name"], unknown_proc)(caller, node["args"])
 
 
