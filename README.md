@@ -61,40 +61,46 @@ foo = foo * 10
 foo = foo / 10
 ```
 
-### Arrays
+### Lists
 
 ```python
-bar : arr
+lst : list
 ```
-Declares an array named `bar`.
+Declares a list named `lst`.
 
 ```python
-bar[n]
+lst[n]
 ```
 
-Returns the `n`th element of the array `bar`. Array indices start at 1.
+Returns the `n`th element of `lst`. List indices start at 1.
 
 ```python
-bar += foo
+lst += value
 ```
 
-Appends the value `foo` to the end of the array `bar`.
+Appends `value` to the end of `lst`.
 
-### Array procedures
+### List procedures
 
 ```python
-bar.append(foo)
+lst.append(value)
 ```
 
-Appends the value `foo` to the end of the array `bar`.
+Appends `value` to the end of `lst`.
 
 ```python
-bar.clear()
+lst.clear()
 ```
 
-Remove all elements from the array `bar`.
+Removes all elements from `lst`.
 
-TODO: Add more array function and procedures.
+```python
+lst.insert(index, value)
+```
+
+Inserts `value` at `index` in `lst`.
+
+TODO: Add more list function and procedures.
 
 ### Procedures
 

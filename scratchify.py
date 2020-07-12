@@ -1,8 +1,8 @@
 """This module contains the scratchify function, which converts an AST into a
 valid object for the project.json file in a scratch project."""
 import itertools
-from resolve import resolve_var, resolve_arr, resolve_proc, \
-resolve_var_or_arr, resolve_ident
+from resolve import resolve_var, resolve_list, resolve_proc, \
+resolve_var_or_list, resolve_ident
 
 id_maker = (f"_{i}" for i in itertools.count())
 
@@ -507,10 +507,10 @@ def _data_setvariableto(node: dict, env) -> list:
 
 def _data_changevariableby(node: dict, env) -> list:
     node["id"] = next(id_maker)
-    var_or_arr, var_id = resolve_var_or_arr(node["name"], env)
+    var_or_list, var_id = resolve_var_or_list(node["name"], env)
     value = scratchify(node["value"], env)
     _assign_parent(node["id"], value)
-    if var_or_arr == "var":
+    if var_or_list == "var":
         return [(node["id"], {
             "opcode": "data_changevariableby",
             "next": None,
@@ -541,7 +541,7 @@ def _data_changevariableby(node: dict, env) -> list:
 
 def _data_itemoflist(node: dict, env) -> list:
     node["id"] = next(id_maker)
-    arr_id = resolve_arr(node["name"], env)
+    list_id = resolve_list(node["name"], env)
     index = scratchify(node["INDEX"], env)
     _assign_parent(node["id"], index)
     return [(node["id"], {
@@ -552,7 +552,7 @@ def _data_itemoflist(node: dict, env) -> list:
             "INDEX": _number_input(index)
         },
         "fields": {
-            "LIST": [node["name"], arr_id]
+            "LIST": [node["name"], list_id]
         },
         "shadow": False,
         "topLevel": False
@@ -586,8 +586,8 @@ def _procedures_call(node: dict, env) -> list:
 
 
 def _ident(node: dict, env) -> list:
-    var_or_arr, var_id = resolve_var_or_arr(node["name"], env)
-    return [[[12 if var_or_arr == "var" else 13, node["name"], var_id]]]
+    var_or_list, var_id = resolve_var_or_list(node["name"], env)
+    return [[[12 if var_or_list == "var" else 13, node["name"], var_id]]]
 
 
 def _control_wait(node: dict, env) -> list:
@@ -760,26 +760,29 @@ def _operator_round(node: dict, env) -> list:
 
 
 def _member_proc_call(node: dict, env) -> list:
-    def expect_args(caller, name, count, provided):
+    def expect_args(expected, provided):
         """Raise an exception if count != provided."""
-        if count != provided:
+        if expected != provided:
             raise TypeError(
-                f"{caller}.{name}() expected {count} arguments but {provided} were provided"
-            )
+                f"{node['caller']}.{node['name']}() expected {expected} \
+arguments but {provided} were provided")
 
     node["id"] = next(id_maker)
     caller_type, caller = resolve_ident(node["caller"], env)
     if caller_type == "var":
         raise AttributeError(
             f"Variable '{node['caller']} has no procedure '{node['name']}'")
-    if caller_type == "arr":
+    if caller_type == "proc":
+        raise AttributeError(
+            f"Procedure '{node['caller']} has no procedure '{node['name']}'")
+    if caller_type == "list":
 
-        def unknown_proc(_):
+        def unknown_proc(_, __):
             raise AttributeError(
-                f"Array '{node['caller']}' has no procedure '{node['name']}")
+                f"List '{node['caller']}' has no procedure '{node['name']}'")
 
-        def append(arr, args):
-            expect_args(node["caller"], node["name"], 1, len(args))
+        def append(list_id, args):
+            expect_args(1, len(args))
 
             value = scratchify(args[0], env)
             _assign_parent(node["id"], value)
@@ -791,14 +794,14 @@ def _member_proc_call(node: dict, env) -> list:
                     "ITEM": _number_input(value)
                 },
                 "fields": {
-                    "LIST": [node["caller"], arr]
+                    "LIST": [node["caller"], list_id]
                 },
                 "shadow": False,
                 "topLevel": False
             })] + value
 
-        def clear(arr, args):
-            expect_args(node["caller"], node["name"], 0, len(args))
+        def clear(list_id, args):
+            expect_args(0, len(args))
 
             return [(node["id"], {
                 "opcode": "data_deletealloflist",
@@ -806,28 +809,52 @@ def _member_proc_call(node: dict, env) -> list:
                 "parent": None,
                 "inputs": {},
                 "fields": {
-                    "LIST": [node["caller"], arr]
+                    "LIST": [node["caller"], list_id]
                 },
                 "shadow": False,
                 "topLevel": False
             })]
 
+        def insert(list_id, args):
+            expect_args(2, len(args))
+
+            index = scratchify(args[0], env)
+            value = scratchify(args[1], env)
+            _assign_parent(node["id"], value, index)
+            return [(node["id"], {
+                "opcode": "data_insertatlist",
+                "next": None,
+                "parent": None,
+                "inputs": {
+                    "ITEM": _number_input(value),
+                    "INDEX": _number_input(index)
+                },
+                "fields": {
+                    "LIST": [node["caller"], list_id]
+                },
+                "shadow": False,
+                "topLevel": False
+            })] + value + index
+
         return {
             "append": append,
             "clear": clear,
+            "insert": insert,
         }.get(node["name"], unknown_proc)(caller, node["args"])
+
+    return None
 
 
 def _program(node: dict, env) -> list:
     for var in node["stage"]["variables"]:
         var["id"] = next(id_maker)
-    for arr in node["stage"]["lists"]:
-        arr["id"] = next(id_maker)
+    for lst in node["stage"]["lists"]:
+        lst["id"] = next(id_maker)
     for spr in node["sprites"]:
         for var in spr["variables"]:
             var["id"] = next(id_maker)
-        for arr in spr["lists"]:
-            arr["id"] = next(id_maker)
+        for lst in spr["lists"]:
+            lst["id"] = next(id_maker)
 
     stage = {
         "isStage":
@@ -838,8 +865,8 @@ def _program(node: dict, env) -> list:
         {var["id"]: [var["name"], 0]
          for var in node["stage"]["variables"]},
         "lists":
-        {arr["id"]: [arr["name"], []]
-         for arr in node["stage"]["lists"]},
+        {lst["id"]: [lst["name"], []]
+         for lst in node["stage"]["lists"]},
         "broadcasts": {},
         "blocks":
         dict(i for i in scratchify(
@@ -970,7 +997,7 @@ def scratchify(tree, env=None) -> list:
             "sensing_mousey": _sensing_mousey,
             "operator_round": _operator_round,
             "member_proc_call": _member_proc_call,
-        }.get(tree["type"], lambda x, y: [])(tree, env)
+        }[tree["type"]](tree, env)
     if isinstance(tree, (int, float)):
         return [[[4, tree]]]
     if isinstance(tree, str):

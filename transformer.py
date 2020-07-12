@@ -33,7 +33,7 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
         } for i in args if i["type"] == "var_decl"]
         stage["lists"] = [{
             "name": i["name"]
-        } for i in args if i["type"] == "arr_decl"]
+        } for i in args if i["type"] == "list_decl"]
         return {
             "type": "program",
             "stage": stage,
@@ -81,7 +81,7 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
             } for i in args if i["type"] == "var_decl"],
             "lists": [{
                 "name": i["name"]
-            } for i in args if i["type"] == "arr_decl"],
+            } for i in args if i["type"] == "list_decl"],
             "procedures":
             [i for i in args if i["type"] == "procedures_definition"]
         }
@@ -429,11 +429,11 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
         return {"type": "var_decl", "name": args[0]["name"]}
 
     @staticmethod
-    def _arr_decl(args):
-        return {"type": "arr_decl", "name": args[0]["name"]}
+    def _list_decl(args):
+        return {"type": "list_decl", "name": args[0]["name"]}
 
     @staticmethod
-    def _arr_index(args):
+    def _list_index(args):
         return {
             "type": "data_itemoflist",
             "name": args[0]["name"],
