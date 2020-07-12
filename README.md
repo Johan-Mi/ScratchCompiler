@@ -88,6 +88,12 @@ bar.append(foo)
 
 Appends the value `foo` to the end of the array `bar`.
 
+```python
+bar.clear()
+```
+
+Remove all elements from the array `bar`.
+
 TODO: Add more array function and procedures.
 
 ### Procedures
