@@ -36,8 +36,6 @@ def _sprite_def(node: dict, env) -> list:
 
 
 def _procedures_definition(node: dict, env) -> list:
-    node["id"] = next(id_maker)
-
     params = [scratchify(i, env)[0] for i in node["params"]]
 
     body = [scratchify(i, env) for i in node["body"]]
@@ -90,13 +88,10 @@ def _procedures_definition(node: dict, env) -> list:
 
     node["prototype"] = prototype
 
-    params.append(definition)
-    params.append(prototype)
-    return sum(body, params)
+    return sum(body, [*params, definition, prototype])
 
 
 def _param(node: dict, _) -> list:
-    node["id"] = next(id_maker)
     return [(node["id"], {
         "opcode": "argument_reporter_string_number",
         "next": None,
@@ -111,7 +106,6 @@ def _param(node: dict, _) -> list:
 
 
 def _motion_movesteps(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     steps = scratchify(node["STEPS"], env)
     _assign_parent(node["id"], steps)
     return [(node["id"], {
@@ -128,7 +122,6 @@ def _motion_movesteps(node: dict, env) -> list:
 
 
 def _motion_gotoxy(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     x_coord = scratchify(node["X"], env)
     y_coord = scratchify(node["Y"], env)
     _assign_parent(node["id"], x_coord, y_coord)
@@ -147,7 +140,6 @@ def _motion_gotoxy(node: dict, env) -> list:
 
 
 def _motion_turnright(node: dict, env) -> dict:
-    node["id"] = next(id_maker)
     degrees = scratchify(node["DEGREES"], env)
     _assign_parent(node["id"], degrees)
     return [(node["id"], {
@@ -164,7 +156,6 @@ def _motion_turnright(node: dict, env) -> dict:
 
 
 def _motion_turnleft(node: dict, env) -> dict:
-    node["id"] = next(id_maker)
     degrees = scratchify(node["DEGREES"], env)
     _assign_parent(node["id"], degrees)
     return [(node["id"], {
@@ -181,7 +172,6 @@ def _motion_turnleft(node: dict, env) -> dict:
 
 
 def _motion_ifonedgebounce(node: dict, _) -> list:
-    node["id"] = next(id_maker)
     return [(node["id"], {
         "opcode": "motion_ifonedgebounce",
         "next": None,
@@ -194,7 +184,6 @@ def _motion_ifonedgebounce(node: dict, _) -> list:
 
 
 def _motion_pointindirection(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     direction = scratchify(node["DIRECTION"], env)
     _assign_parent(node["id"], direction)
     return [(node["id"], {
@@ -211,7 +200,6 @@ def _motion_pointindirection(node: dict, env) -> list:
 
 
 def _motion_glidesecstoxy(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     x_coord = scratchify(node["X"], env)
     y_coord = scratchify(node["Y"], env)
     secs = scratchify(node["SECS"], env)
@@ -232,8 +220,6 @@ def _motion_glidesecstoxy(node: dict, env) -> list:
 
 
 def _control_if(node: dict, env) -> list:
-    node["id"] = next(id_maker)
-
     condition = scratchify(node["CONDITION"], env)
     _assign_parent(node["id"], condition)
 
@@ -258,8 +244,6 @@ def _control_if(node: dict, env) -> list:
 
 
 def _control_if_else(node: dict, env) -> list:
-    node["id"] = next(id_maker)
-
     condition = scratchify(node["CONDITION"], env)
     _assign_parent(node["id"], condition)
 
@@ -283,12 +267,10 @@ def _control_if_else(node: dict, env) -> list:
     _doubly_link_stmts(if_stmt, substack)
     _doubly_link_stmts(if_stmt, substack2)
 
-    return sum(substack + substack2, [if_stmt] + condition)
+    return sum(substack + substack2, [if_stmt, *condition])
 
 
 def _control_repeat(node: dict, env) -> list:
-    node["id"] = next(id_maker)
-
     times = scratchify(node["TIMES"], env)
     _assign_parent(node["id"], times)
 
@@ -309,12 +291,10 @@ def _control_repeat(node: dict, env) -> list:
 
     _doubly_link_stmts(loop, substack)
 
-    return sum(substack, [loop] + times)
+    return sum(substack, [loop, *times])
 
 
 def _control_forever(node: dict, env) -> list:
-    node["id"] = next(id_maker)
-
     substack = [scratchify(i, env) for i in node["body"]]
 
     loop = (node["id"], {
@@ -335,8 +315,6 @@ def _control_forever(node: dict, env) -> list:
 
 
 def _control_while(node: dict, env) -> list:
-    node["id"] = next(id_maker)
-
     condition = scratchify(node["CONDITION"], env)
     _assign_parent(node["id"], condition)
 
@@ -357,12 +335,10 @@ def _control_while(node: dict, env) -> list:
 
     _doubly_link_stmts(loop, substack)
 
-    return sum(substack, [loop] + condition)
+    return sum(substack, [loop, *condition])
 
 
 def _control_repeat_until(node: dict, env) -> list:
-    node["id"] = next(id_maker)
-
     condition = scratchify(node["CONDITION"], env)
     _assign_parent(node["id"], condition)
 
@@ -383,12 +359,11 @@ def _control_repeat_until(node: dict, env) -> list:
 
     _doubly_link_stmts(loop, substack)
 
-    return sum(substack, [loop] + condition)
+    return sum(substack, [loop, *condition])
 
 
 def _bin_numeric_op(opcode: str):
     def generated_func(node: dict, env):
-        node["id"] = next(id_maker)
         num1 = scratchify(node["NUM1"], env)
         num2 = scratchify(node["NUM2"], env)
         _assign_parent(node["id"], num1, num2)
@@ -410,7 +385,6 @@ def _bin_numeric_op(opcode: str):
 
 def _binary_logic_operator(opcode: str):
     def generated_func(node: dict, env):
-        node["id"] = next(id_maker)
         operand1 = scratchify(node["OPERAND1"], env)
         operand2 = scratchify(node["OPERAND2"], env)
         _assign_parent(node["id"], operand1, operand2)
@@ -431,7 +405,6 @@ def _binary_logic_operator(opcode: str):
 
 
 def _operator_not(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     operand = scratchify(node["OPERAND"], env)
     _assign_parent(node["id"], operand)
     return [(node["id"], {
@@ -448,7 +421,6 @@ def _operator_not(node: dict, env) -> list:
 
 
 def _operator_random(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     low = scratchify(node["FROM"], env)
     high = scratchify(node["TO"], env)
     _assign_parent(node["id"], low, high)
@@ -467,7 +439,6 @@ def _operator_random(node: dict, env) -> list:
 
 
 def _operator_join(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     string1 = scratchify(node["STRING1"], env)
     string2 = scratchify(node["STRING2"], env)
     _assign_parent(node["id"], string1, string2)
@@ -486,7 +457,6 @@ def _operator_join(node: dict, env) -> list:
 
 
 def _data_setvariableto(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     var_id = resolve_var(node["name"], env)
     value = scratchify(node["value"], env)
     _assign_parent(node["id"], value)
@@ -506,7 +476,6 @@ def _data_setvariableto(node: dict, env) -> list:
 
 
 def _data_changevariableby(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     var_or_list, var_id = resolve_var_or_list(node["name"], env)
     value = scratchify(node["value"], env)
     _assign_parent(node["id"], value)
@@ -540,7 +509,6 @@ def _data_changevariableby(node: dict, env) -> list:
 
 
 def _data_itemoflist(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     list_id = resolve_list(node["name"], env)
     index = scratchify(node["INDEX"], env)
     _assign_parent(node["id"], index)
@@ -560,8 +528,6 @@ def _data_itemoflist(node: dict, env) -> list:
 
 
 def _procedures_call(node: dict, env) -> list:
-    node["id"] = next(id_maker)
-
     proc = resolve_proc(node["name"], env)
     args = [scratchify(i, env) for i in node["args"]]
     _assign_parent(node["id"], *args)
@@ -591,7 +557,6 @@ def _ident(node: dict, env) -> list:
 
 
 def _control_wait(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     duration = scratchify(node["DURATION"], env)
     _assign_parent(node["id"], duration)
     return [(node["id"], {
@@ -608,7 +573,6 @@ def _control_wait(node: dict, env) -> list:
 
 
 def _control_wait_until(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     condition = scratchify(node["CONDITION"], env)
     _assign_parent(node["id"], condition)
     return [(node["id"], {
@@ -625,7 +589,6 @@ def _control_wait_until(node: dict, env) -> list:
 
 
 def _looks_say(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     message = scratchify(node["MESSAGE"], env)
     _assign_parent(node["id"], message)
     return [(node["id"], {
@@ -642,7 +605,6 @@ def _looks_say(node: dict, env) -> list:
 
 
 def _looks_sayforsecs(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     message = scratchify(node["MESSAGE"], env)
     secs = scratchify(node["SECS"], env)
     _assign_parent(node["id"], message, secs)
@@ -661,7 +623,6 @@ def _looks_sayforsecs(node: dict, env) -> list:
 
 
 def _sensing_askandwait(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     question = scratchify(node["QUESTION"], env)
     _assign_parent(node["id"], question)
     return [(node["id"], {
@@ -678,7 +639,6 @@ def _sensing_askandwait(node: dict, env) -> list:
 
 
 def _sensing_answer(node: dict, _) -> list:
-    node["id"] = next(id_maker)
     return [(node["id"], {
         "opcode": "sensing_answer",
         "next": None,
@@ -691,7 +651,6 @@ def _sensing_answer(node: dict, _) -> list:
 
 
 def _sensing_timer(node: dict, _) -> list:
-    node["id"] = next(id_maker)
     return [(node["id"], {
         "opcode": "sensing_timer",
         "next": None,
@@ -704,7 +663,6 @@ def _sensing_timer(node: dict, _) -> list:
 
 
 def _sensing_username(node: dict, _) -> list:
-    node["id"] = next(id_maker)
     return [(node["id"], {
         "opcode": "sensing_username",
         "next": None,
@@ -717,7 +675,6 @@ def _sensing_username(node: dict, _) -> list:
 
 
 def _sensing_mousex(node: dict, _) -> list:
-    node["id"] = next(id_maker)
     return [(node["id"], {
         "opcode": "sensing_mousex",
         "next": None,
@@ -730,7 +687,6 @@ def _sensing_mousex(node: dict, _) -> list:
 
 
 def _sensing_mousey(node: dict, _) -> list:
-    node["id"] = next(id_maker)
     return [(node["id"], {
         "opcode": "sensing_mousey",
         "next": None,
@@ -743,7 +699,6 @@ def _sensing_mousey(node: dict, _) -> list:
 
 
 def _operator_round(node: dict, env) -> list:
-    node["id"] = next(id_maker)
     num = scratchify(node["NUM"], env)
     _assign_parent(node["id"], num)
     return [(node["id"], {
@@ -760,14 +715,13 @@ def _operator_round(node: dict, env) -> list:
 
 
 def _member_proc_call(node: dict, env) -> list:
-    def expect_args(expected, provided):
+    def expect_args(expected):
         """Raise an exception if count != provided."""
-        if expected != provided:
+        if expected != len(node['args']):
             raise TypeError(
                 f"{node['caller']}.{node['name']}() expected {expected} \
-arguments but {provided} were provided")
+arguments but {len(node['args'])} were provided")
 
-    node["id"] = next(id_maker)
     caller_type, caller = resolve_ident(node["caller"], env)
     if caller_type == "var":
         raise AttributeError(
@@ -782,7 +736,7 @@ arguments but {provided} were provided")
                 f"List '{node['caller']}' has no procedure '{node['name']}'")
 
         def append(list_id, args):
-            expect_args(1, len(args))
+            expect_args(1)
 
             value = scratchify(args[0], env)
             _assign_parent(node["id"], value)
@@ -801,7 +755,7 @@ arguments but {provided} were provided")
             })] + value
 
         def clear(list_id, args):
-            expect_args(0, len(args))
+            expect_args(0)
 
             return [(node["id"], {
                 "opcode": "data_deletealloflist",
@@ -816,7 +770,7 @@ arguments but {provided} were provided")
             })]
 
         def insert(list_id, args):
-            expect_args(2, len(args))
+            expect_args(2)
 
             index = scratchify(args[0], env)
             value = scratchify(args[1], env)
@@ -948,6 +902,9 @@ def scratchify(tree, env=None) -> list:
     """Converts an AST into a valid object for the project.json file in a
     scratch project."""
     if isinstance(tree, dict):
+        if tree["type"] not in ("stage_def", "sprite_def", "ident", "program"):
+            tree["id"] = next(id_maker)
+
         return {
             "operator_add": _bin_numeric_op("operator_add"),
             "operator_subtract": _bin_numeric_op("operator_subtract"),
