@@ -4,7 +4,7 @@ Compiles code into scratch projects.
 
 ## Language reference
 
-If you've ever used Pyton, you will probably find the syntax familiar.
+If you've ever used Python, you will probably find the syntax familiar.
 
 ### The stage
 
