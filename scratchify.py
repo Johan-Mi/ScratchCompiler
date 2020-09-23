@@ -28,11 +28,79 @@ def _number_input(nodes) -> list:
 
 
 def _stage_def(node: dict, env) -> list:
-    return sum((scratchify(i, env) for i in node["procedures"]), [])
+    return {
+        "isStage":
+        True,
+        "name":
+        "Stage",
+        "variables":
+        {var["id"]: [var["name"], 0]
+         for var in node["variables"]},
+        "lists": {lst["id"]: [lst["name"], []]
+                  for lst in node["lists"]},
+        "broadcasts": {},
+        "blocks":
+        dict(i
+             for i in sum((scratchify(i, env) for i in node["procedures"]), [])
+             if isinstance(i, tuple)),
+        "comments": {},
+        "currentCostume":
+        0,
+        "costumes": [],
+        "sounds": [],
+        "volume":
+        0,
+        "layerOrder":
+        0,
+        "tempo":
+        0,
+        "videoTransparency":
+        0,
+        "videoState":
+        "off"
+    }
 
 
 def _sprite_def(node: dict, env) -> list:
-    return sum((scratchify(i, env) for i in node["procedures"]), [])
+    return {
+        "isStage":
+        False,
+        "name":
+        node["name"],
+        "variables":
+        {var["id"]: [var["name"], 0]
+         for var in node["variables"]},
+        "lists": {lst["id"]: [lst["name"], []]
+                  for lst in node["lists"]},
+        "broadcasts": {},
+        "blocks":
+        dict(block for block in sum((scratchify(proc, env)
+                                     for proc in node["procedures"]), [])
+             if isinstance(block, tuple)),
+        "comments": {},
+        "currentCostume":
+        0,
+        "costumes": [],
+        "sounds": [],
+        "volume":
+        0,
+        "layerOrder":
+        env["index"] + 1,
+        "visible":
+        True,
+        "x":
+        0,
+        "y":
+        0,
+        "size":
+        100,
+        "direction":
+        90,
+        "draggable":
+        False,
+        "rotationStyle":
+        "all around"
+    }
 
 
 def _procedures_definition(node: dict, env) -> list:
@@ -754,7 +822,7 @@ arguments but {len(node['args'])} were provided")
                 "topLevel": False
             })] + value
 
-        def clear(list_id, args):
+        def clear(list_id, _):
             expect_args(0)
 
             return [(node["id"], {
@@ -810,82 +878,20 @@ def _program(node: dict, env) -> list:
         for lst in spr["lists"]:
             lst["id"] = next(id_maker)
 
-    stage = {
-        "isStage":
-        True,
-        "name":
-        "Stage",
-        "variables":
-        {var["id"]: [var["name"], 0]
-         for var in node["stage"]["variables"]},
-        "lists":
-        {lst["id"]: [lst["name"], []]
-         for lst in node["stage"]["lists"]},
-        "broadcasts": {},
-        "blocks":
-        dict(i for i in scratchify(
-            node["stage"], env or {
-                "stage": node["stage"],
-                "sprite": node["stage"]
-            }) if isinstance(i, tuple)),
-        "comments": {},
-        "currentCostume":
-        0,
-        "costumes": [],
-        "sounds": [],
-        "volume":
-        0,
-        "layerOrder":
-        0,
-        "tempo":
-        0,
-        "videoTransparency":
-        0,
-        "videoState":
-        "off"
-    }
+    stage = scratchify(
+        node["stage"], {
+            "stage": node["stage"],
+            "sprite": node["stage"]
+        })
 
-    targets = [stage] + [{
-        "isStage":
-        False,
-        "name":
-        spr["name"],
-        "variables": {j["id"]: [j["name"], 0]
-                      for j in spr["variables"]},
-        "lists": {j["id"]: [j["name"], []]
-                  for j in spr["lists"]},
-        "broadcasts": {},
-        "blocks":
-        dict(
-            j
-            for j in scratchify(spr, env or {
+    targets = [
+        stage, *(scratchify(
+            spr, {
                 "stage": node["stage"],
-                "sprite": spr
-            }) if isinstance(j, tuple)),
-        "comments": {},
-        "currentCostume":
-        0,
-        "costumes": [],
-        "sounds": [],
-        "volume":
-        0,
-        "layerOrder":
-        i,
-        "visible":
-        True,
-        "x":
-        0,
-        "y":
-        0,
-        "size":
-        100,
-        "direction":
-        90,
-        "draggable":
-        False,
-        "rotationStyle":
-        "all around"
-    } for i, spr in enumerate(node["sprites"], 1)]
+                "sprite": spr,
+                "index": i
+            }) for i, spr in enumerate(node["sprites"]))
+    ]
 
     return {
         "targets": targets,

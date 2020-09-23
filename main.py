@@ -67,7 +67,7 @@ def create_project_files(project):
 
     shutil.copy(
         "resources/backdrop.svg",
-        "project/%s.svg" % project["targets"][0]["costumes"][0]["assetId"])
+        f"project/{project['targets'][0]['costumes'][0]['assetId']}.svg")
 
     os.system("zip --quiet -r project.sb3 project")
     shutil.rmtree("project")

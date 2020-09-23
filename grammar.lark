@@ -27,7 +27,7 @@ arg_list		: [expr ("," expr)*]						-> _arg_list
 				| forever_loop
 var_decl		:  ident ":" "var" _NEWLINE					-> _var_decl
 list_decl		:  ident ":" "list" _NEWLINE				-> _list_decl
-list_index       : ident "[" expr "]"                        -> _list_index
+list_index		: ident "[" expr "]"                        -> _list_index
 if_stmt			: "if" expr ":" suite ("elif" expr ":" suite)* ["else" ":" suite]	-> _if_stmt
 until_loop		: "until" expr ":" suite					-> _until_loop
 while_loop		: "while" expr ":" suite					-> _while_loop
