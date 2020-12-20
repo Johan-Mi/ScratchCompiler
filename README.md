@@ -12,7 +12,7 @@ If you've ever used Python, you will probably find the syntax familiar.
 stage:
 	...
 ```
-There can only be one stage. It can contain variables, lists, costumes, and
+There can only be one stage. It can contain variables, lists, costumes and
 procedures.
 
 ### Sprites
@@ -109,7 +109,7 @@ def my_procedure(a, b, c):
 	doSomething()
 	doSomethingElse()
 ```
-Creates the procedure `my_procedure` that takes the arguments `a`, `b`, and
+Creates the procedure `my_procedure` that takes the arguments `a`, `b` and
 `c`. When called, it will run the indented code block. Procedures can belong to
 sprites or the stage.
 
@@ -142,6 +142,6 @@ elif another_condition:
 	branch2()
 ```
 Run `branch1()` if `a_condition` is true. If it's not true, continue down and
-run `branch2()` if `another_condition` is true. `elif`s can be chained, and the
+run `branch2()` if `another_condition` is true. `elif`s can be chained and the
 chain can optionally end with an `else` that will run if all of the conditions
 fail.
