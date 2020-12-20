@@ -107,13 +107,7 @@ class ScratchTransformer(Transformer):  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def _proc_def_warp(args):
-        return {
-            "type": "procedures_definition",
-            "name": args["name"],
-            "params": args["params"],
-            "warp": "true",
-            "body": args["body"]
-        }
+        return {**args[0], "warp": "true"}
 
     @staticmethod
     def _param_list(args):
