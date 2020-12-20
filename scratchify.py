@@ -27,7 +27,7 @@ def _number_input(nodes) -> list:
     return [1, nodes[0][0]]
 
 
-def _stage_def(node: dict, env) -> list:
+def _stage_def(node: dict, env):
     return {
         "isStage":
         True,
@@ -61,7 +61,7 @@ def _stage_def(node: dict, env) -> list:
     }
 
 
-def _sprite_def(node: dict, env) -> list:
+def _sprite_def(node: dict, env):
     return {
         "isStage":
         False,
@@ -867,7 +867,7 @@ arguments but {len(node['args'])} were provided")
     return None
 
 
-def _program(node: dict, env) -> list:
+def _program(node: dict, env):
     for var in node["stage"]["variables"]:
         var["id"] = next(id_maker)
     for lst in node["stage"]["lists"]:
@@ -878,19 +878,17 @@ def _program(node: dict, env) -> list:
         for lst in spr["lists"]:
             lst["id"] = next(id_maker)
 
-    stage = scratchify(
-        node["stage"], {
-            "stage": node["stage"],
-            "sprite": node["stage"]
-        })
+    stage = scratchify(node["stage"], {
+        "stage": node["stage"],
+        "sprite": node["stage"]
+    })
 
     targets = [
-        stage, *(scratchify(
-            spr, {
-                "stage": node["stage"],
-                "sprite": spr,
-                "index": i
-            }) for i, spr in enumerate(node["sprites"]))
+        stage, *(scratchify(spr, {
+            "stage": node["stage"],
+            "sprite": spr,
+            "index": i
+        }) for i, spr in enumerate(node["sprites"]))
     ]
 
     return {
