@@ -232,8 +232,8 @@ arguments but {len(call['args'])} were provided")
             "answer": answer,
             "timer": timer,
             "username": username,
-            "mouseX": mousex,
-            "mouseY": mousey,
+            "mouse_x": mousex,
+            "mouse_y": mousey,
             "round": round_,
         }.get(call["name"], unknown_func)(call)
 
@@ -315,17 +315,17 @@ arguments but {len(call['args'])} were provided")
             return {"type": "sensing_askandwait", "QUESTION": node["args"][0]}
 
         return {
-            "moveSteps": move_steps,
-            "goToXY": go_to_xy,
-            "turnRight": turn_right,
-            "turnLeft": turn_left,
-            "pointInDirection": point_in_direction,
-            "glideToXY": glide_secs_to_xy,
-            "ifOnEdgeBounce": if_on_edge_bounce,
+            "move_steps": move_steps,
+            "go_to_xy": go_to_xy,
+            "turn_right": turn_right,
+            "turn_left": turn_left,
+            "point_in_direction": point_in_direction,
+            "glide_to_xy": glide_secs_to_xy,
+            "if_on_edge_bounce": if_on_edge_bounce,
             "wait": wait,
-            "waitUntil": wait_until,
+            "wait_until": wait_until,
             "say": say,
-            "sayForSeconds": say_seconds,
+            "say_for_seconds": say_seconds,
             "ask": ask,
         }.get(call["name"], lambda x: x)(call)
 
