@@ -21,6 +21,21 @@ def _doubly_link_stmts(first: tuple, rest: list):
             rest[i + 1][0][1]["parent"] = rest[i][0][0]
 
 
+def _block_noargs(opcode):
+    def generated_func(node: dict, env):
+        return [(node["id"], {
+            "opcode": opcode,
+            "next": None,
+            "parent": None,
+            "inputs": {},
+            "fields": {},
+            "shadow": False,
+            "topLevel": False
+        })]
+
+    return generated_func
+
+
 def _number_input(nodes) -> list:
     if nodes[0][0][0] in (12, 13):
         return [3, nodes[0][0], [4, 0]]
@@ -237,18 +252,6 @@ def _motion_turnleft(node: dict, env) -> dict:
         "shadow": False,
         "topLevel": False
     })] + degrees
-
-
-def _motion_ifonedgebounce(node: dict, _) -> list:
-    return [(node["id"], {
-        "opcode": "motion_ifonedgebounce",
-        "next": None,
-        "parent": None,
-        "inputs": {},
-        "fields": {},
-        "shadow": False,
-        "topLevel": False
-    })]
 
 
 def _motion_pointindirection(node: dict, env) -> list:
@@ -706,66 +709,6 @@ def _sensing_askandwait(node: dict, env) -> list:
     })] + question
 
 
-def _sensing_answer(node: dict, _) -> list:
-    return [(node["id"], {
-        "opcode": "sensing_answer",
-        "next": None,
-        "parent": None,
-        "inputs": {},
-        "fields": {},
-        "shadow": False,
-        "topLevel": False
-    })]
-
-
-def _sensing_timer(node: dict, _) -> list:
-    return [(node["id"], {
-        "opcode": "sensing_timer",
-        "next": None,
-        "parent": None,
-        "inputs": {},
-        "fields": {},
-        "shadow": False,
-        "topLevel": False
-    })]
-
-
-def _sensing_username(node: dict, _) -> list:
-    return [(node["id"], {
-        "opcode": "sensing_username",
-        "next": None,
-        "parent": None,
-        "inputs": {},
-        "fields": {},
-        "shadow": False,
-        "topLevel": False
-    })]
-
-
-def _sensing_mousex(node: dict, _) -> list:
-    return [(node["id"], {
-        "opcode": "sensing_mousex",
-        "next": None,
-        "parent": None,
-        "inputs": {},
-        "fields": {},
-        "shadow": False,
-        "topLevel": False
-    })]
-
-
-def _sensing_mousey(node: dict, _) -> list:
-    return [(node["id"], {
-        "opcode": "sensing_mousey",
-        "next": None,
-        "parent": None,
-        "inputs": {},
-        "fields": {},
-        "shadow": False,
-        "topLevel": False
-    })]
-
-
 def _operator_round(node: dict, env) -> list:
     num = scratchify(node["NUM"], env)
     _assign_parent(node["id"], num)
@@ -947,17 +890,21 @@ def scratchify(tree, env=None) -> list:
             "motion_turnleft": _motion_turnleft,
             "motion_pointindirection": _motion_pointindirection,
             "motion_glidesecstoxy": _motion_glidesecstoxy,
-            "motion_ifonedgebounce": _motion_ifonedgebounce,
+            "motion_ifonedgebounce": _block_noargs("motion_ifOnEdgeBounce"),
             "looks_say": _looks_say,
             "looks_sayforsecs": _looks_sayforsecs,
             "sensing_askandwait": _sensing_askandwait,
-            "sensing_answer": _sensing_answer,
-            "sensing_timer": _sensing_timer,
-            "sensing_username": _sensing_username,
-            "sensing_mousex": _sensing_mousex,
-            "sensing_mousey": _sensing_mousey,
+            "sensing_answer": _block_noargs("sensing_answer"),
+            "sensing_timer": _block_noargs("sensing_timer"),
+            "sensing_username": _block_noargs("sensing_username"),
+            "sensing_mousex": _block_noargs("sensing_mousex"),
+            "sensing_mousey": _block_noargs("sensing_mousey"),
             "operator_round": _operator_round,
             "member_proc_call": _member_proc_call,
+            "pen_pendown": _block_noargs("pen_penDown"),
+            "pen_penup": _block_noargs("pen_penUp"),
+            "pen_stamp": _block_noargs("pen_stamp"),
+            "pen_eraseall": _block_noargs("pen_clear"),
         }[tree["type"]](tree, env)
     if isinstance(tree, (int, float)):
         return [[[4, tree]]]

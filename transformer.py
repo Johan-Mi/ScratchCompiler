@@ -314,6 +314,22 @@ arguments but {len(call['args'])} were provided")
             expect_args(1)
             return {"type": "sensing_askandwait", "QUESTION": node["args"][0]}
 
+        def pen_down(_):
+            expect_args(0)
+            return {"type": "pen_pendown"}
+
+        def pen_up(_):
+            expect_args(0)
+            return {"type": "pen_penup"}
+
+        def stamp(_):
+            expect_args(0)
+            return {"type": "pen_stamp"}
+
+        def erase_all(_):
+            expect_args(0)
+            return {"type": "pen_eraseall"}
+
         return {
             "move_steps": move_steps,
             "go_to_xy": go_to_xy,
@@ -327,6 +343,10 @@ arguments but {len(call['args'])} were provided")
             "say": say,
             "say_for_seconds": say_seconds,
             "ask": ask,
+            "pen_down": pen_down,
+            "pen_up": pen_up,
+            "stamp": stamp,
+            "erase_all": erase_all,
         }.get(call["name"], lambda x: x)(call)
 
     @staticmethod
